@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
+<title>محطة الوقود v3.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f4f8;--surface:#fff;--card:#fff;--card2:#f7f9fc;
+  --border:#dde3ec;--border2:#c8d2e0;--text:#1a2236;--text2:#3d4f6b;--muted:#7e90a8;
+  --petrol:#d4880a;--petrol-bg:#fff8e6;--petrol-bd:#f5d78a;
+  --diesel:#0a7c4e;--diesel-bg:#e8faf2;--diesel-bd:#7dd9b0;
+  --accent:#2563eb;--accent-bg:#eff4ff;
+  --danger:#dc2626;--danger-bg:#fff1f1;
+  --warning:#b45309;--warning-bg:#fffbeb;
+  --green:#16a34a;--green-bg:#f0fdf4;
+  --red:#dc2626;
+  --sh:0 1px 4px rgba(30,50,90,.07),0 4px 16px rgba(30,50,90,.05);
+  --sh-sm:0 1px 3px rgba(30,50,90,.08);
+}
+body.dark{
+  --bg:#0f1623;--surface:#1a2236;--card:#1e2a40;--card2:#222f45;
+  --border:#2d3f5a;--border2:#3a506e;--text:#e2e8f0;--text2:#a0b0c8;--muted:#5a7090;
+  --petrol-bg:#2d2010;--petrol-bd:#6b4a0a;
+  --diesel-bg:#0a1f18;--diesel-bd:#0d5c38;
+  --accent-bg:#1a2550;
+  --danger-bg:#2a1010;
+  --warning-bg:#2a1f08;
+  --green-bg:#0a1f10;
+  --sh:0 1px 4px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);
+  --sh-sm:0 1px 3px rgba(0,0,0,.3);
+}
+body,*{transition:background-color .2s,border-color .2s,color .15s;}
+body{background:var(--bg);color:var(--text);font-family:'Cairo','Segoe UI',sans-serif;min-height:100vh}
+#app{max-width:480px;margin:0 auto}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]{-moz-appearance:textfield}
+input:focus{border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(37,99,235,.12)!important;outline:none}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer}
+.inp{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--text);
+  padding:9px 12px;font-size:14px;width:100%;font-family:'JetBrains Mono',monospace}
+.lbl{font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rbox{background:var(--card2);border-radius:10px;padding:11px 13px;border:1.5px solid var(--border)}
+.rbox .rl{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.rbox .rv{font-size:17px;font-weight:800;font-family:'JetBrains Mono',monospace} #page-credit .rbox .rv{font-size:20px;}
+.card{background:var(--card);border-radius:18px;border:1.5px solid var(--border);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+#hdr{position:sticky;top:0;z-index:100;background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 16px;box-shadow:var(--sh-sm)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;padding:13px 0 9px}
+.hdr-ic{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hdr-t{font-size:17px;font-weight:900}.hdr-s{font-size:10px;color:var(--muted);font-weight:600}
+.hdr-d{font-size:12px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:700;background:var(--accent-bg);padding:4px 10px;border-radius:20px}
+.tabs{display:flex;gap:3px;padding-bottom:11px}
+.tab{flex:1;padding:6px 1px;background:transparent;color:var(--muted);font-size:10px;font-family:'Cairo',sans-serif;
+  font-weight:700;border-radius:10px;position:relative;border:none;cursor:pointer;transition:background .15s,color .15s}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.bdg{position:absolute;top:3px;left:3px;background:var(--danger);color:#fff;border-radius:50%;
+  width:17px;height:17px;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center}
+#content{padding:14px 16px 90px}
+.page{display:none}.page.active{display:block}
+.sdiv{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;
+  padding:6px 0 10px;display:flex;align-items:center;gap:8px}
+.sdiv::after{content:'';flex:1;height:1.5px;background:var(--border)}
+.tank-tr{height:11px;border-radius:6px;background:var(--border);overflow:hidden;direction:ltr;margin-bottom:4px}
+.tank-fl{height:100%;border-radius:6px;transition:width .3s}
+.tank-info{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:8px}
+.fhdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.fdot{width:11px;height:11px;border-radius:50%}
+.fnm{font-size:16px;font-weight:900}
+.fcur{margin-right:auto;font-size:12px;color:var(--muted);font-weight:600;background:var(--card2);padding:2px 8px;border-radius:20px;border:1px solid var(--border)}
+.cpbtn{margin-top:12px;width:100%;padding:10px;background:transparent;border-radius:10px;font-size:12px;font-family:'Cairo',sans-serif;font-weight:700;cursor:pointer}
+.rfrow{display:flex;gap:8px;margin-top:12px;align-items:flex-end}
+.rfrow>div{flex:1}
+.rfbtn{padding:10px 14px;border-radius:10px;font-weight:900;font-size:13px;border:none;cursor:pointer;font-family:'Cairo',sans-serif;white-space:nowrap}
+.netbox{border-radius:14px;padding:14px 16px}
+.netbox .nl{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.netbox .nv{font-size:26px;font-weight:900;font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
+.crh{display:none}
+.crrow{display:flex;flex-direction:column;padding:6px 0;border-bottom:1.5px solid var(--border);gap:5px} #page-credit .crrow .crlit{font-size:36px;font-family:'JetBrains Mono',monospace;font-weight:700;}
+.crrow:last-child{border-bottom:none}
+.crn{font-size:10px;color:var(--muted);text-align:center;font-weight:700}
+.cramt{font-size:20px;font-family:'JetBrains Mono',monospace;font-weight:700;white-space:nowrap;min-width:76px;text-align:left}
+.ng{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.nc{border-radius:14px;border:1.5px solid var(--border);padding:16px;text-align:center;background:var(--card);box-shadow:var(--sh-sm)}
+.nc .ncl{font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+.cbox{border-radius:18px;padding:20px;text-align:center}
+.cbox .ct{font-size:11px;margin-bottom:3px;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+.cbox .cs{font-size:11px;margin-bottom:12px}
+.cbox .cv{font-size:34px;font-weight:900;font-family:'JetBrains Mono',monospace;letter-spacing:-1px;line-height:1}
+.cbox .cd{margin-top:10px;font-size:12px;display:flex;justify-content:center;gap:16px;font-weight:700}
+/* archive */
+.savbtn{width:100%;padding:14px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:900;font-family:'Cairo',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 14px rgba(37,99,235,.35)}
+.bkrow{display:flex;gap:8px;margin-bottom:16px}
+.bkbtn{flex:1;padding:11px;border-radius:12px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;border:none;text-align:center}
+.arch-empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px;line-height:2.2}
+.aitm{background:var(--card);border-radius:16px;border:1.5px solid var(--border);padding:16px;margin-bottom:12px;box-shadow:var(--sh-sm)}
+.adtrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.adt{font-size:16px;font-weight:900}
+.acmb{font-size:14px;font-weight:900;font-family:'JetBrains Mono',monospace;padding:4px 12px;border-radius:20px}
+.asec{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:10px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+.akv{background:var(--card2);border-radius:8px;padding:8px 10px;border:1px solid var(--border)}
+.akv .akl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:2px}
+.akv .akv2{font-size:13px;font-weight:800;font-family:'JetBrains Mono',monospace}
+.akv-full{grid-column:1/-1}
+.atbar{height:7px;border-radius:4px;background:var(--border);overflow:hidden;direction:ltr;margin-top:4px}
+.atfill{height:100%;border-radius:4px}
+.acrrow{display:flex;justify-content:space-between;padding:4px 8px;border-radius:6px;margin-bottom:3px;font-size:12px;background:var(--card2);border:1px solid var(--border)}
+.aacts{display:flex;gap:6px;margin-top:12px}
+.aact{flex:1;padding:9px 6px;border-radius:10px;border:none;font-family:'Cairo',sans-serif;font-weight:700;font-size:12px;cursor:pointer}
+.rptbtn{width:100%;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:900;font-family:'Cairo',sans-serif;cursor:pointer;margin-top:6px;box-shadow:0 4px 14px rgba(22,163,74,.3)}
+/* modal */
+.mov{position:fixed;inset:0;background:rgba(10,20,40,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
+.mov.open{opacity:1;pointer-events:all}
+.mbox{background:var(--surface);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;padding:20px 16px 40px;transform:translateY(30px);transition:transform .2s;box-shadow:0 -4px 30px rgba(10,20,40,.15)}
+.mov.open .mbox{transform:translateY(0)}
+.mhnd{width:40px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
+.mtit{font-size:17px;font-weight:900;color:var(--text);margin-bottom:3px}
+.msub{font-size:12px;color:var(--muted);margin-bottom:16px}
+.mcls{background:var(--card2);border:1.5px solid var(--border);color:var(--text2);border-radius:8px;padding:5px 14px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700}
+.msec{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin:14px 0 8px;border-bottom:1.5px solid var(--border);padding-bottom:5px}
+.mg2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.mrbox{background:var(--card2);border-radius:10px;padding:9px 12px;border:1.5px solid var(--border)}
+.mrbox .mrl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;font-weight:700}
+.mrbox .mrv{font-size:15px;font-weight:800;font-family:'JetBrains Mono',monospace}
+.mg2r{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.msvbtn{width:100%;padding:13px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:900;font-family:'Cairo',sans-serif;cursor:pointer;margin-top:14px;box-shadow:0 3px 12px rgba(37,99,235,.3)}
+.rarea{width:100%;min-height:200px;background:var(--card2);border:1.5px solid var(--border);border-radius:12px;padding:12px;font-size:12px;color:var(--text);font-family:'JetBrains Mono',monospace;resize:none;direction:rtl;line-height:1.7}
+.shrow{display:flex;gap:8px;margin-top:12px}
+.shbtn{flex:1;padding:11px;border:none;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+
+/* ===== الاقتراحات التلقائية ===== */
+.ac-wrap{position:relative;flex:1;margin-bottom:0}
+.ac-list{position:fixed;background:var(--surface);border:1.5px solid var(--accent);border-radius:12px;box-shadow:0 8px 32px rgba(37,99,235,.22);z-index:9999;display:none;max-height:260px;overflow-y:auto;min-width:220px}
+.ac-list.open{display:block}
+.ac-item{padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background .1s}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.focused{background:var(--accent-bg)}
+.ac-name{font-size:13px;font-weight:800;color:var(--text);font-family:'Cairo',sans-serif}
+.ac-plate{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:600}
+.ac-empty{padding:10px 12px;color:var(--muted);font-size:12px;text-align:center;font-weight:600}
+.ac-pick-name,.ac-pick-plate{padding:7px 12px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}
+.ac-pick-name:hover,.ac-pick-name:active{background:var(--accent-bg)}
+.ac-pick-plate:hover,.ac-pick-plate:active{background:#f0fdf4}
+.ac-pick-name:last-child,.ac-pick-plate:last-child{border-bottom:none}
+.ac-pick-hint{font-size:9px;color:var(--muted);font-weight:600;margin-top:1px}
+
+/* ===== صفحة العملاء ===== */
+.cl-add-card{background:var(--card);border-radius:18px;border:1.5px solid var(--border);padding:18px;margin-bottom:14px;box-shadow:var(--sh)}
+.cl-add-title{font-size:14px;font-weight:900;margin-bottom:14px;color:var(--text)}
+.cl-add-btn{width:100%;padding:12px;background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:900;font-family:'Cairo',sans-serif;cursor:pointer;box-shadow:0 3px 12px rgba(37,99,235,.25)}
+.cl-search-wrap{position:relative;margin-bottom:12px}
+.cl-search-ic{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.cl-search-inp{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:9px 36px 9px 12px;font-size:14px;width:100%;font-family:'Cairo',sans-serif}
+.cl-stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.cl-stat-box{background:var(--card);border-radius:12px;border:1.5px solid var(--border);padding:11px;text-align:center}
+.cl-stat-val{font-size:22px;font-weight:900;font-family:'JetBrains Mono',monospace;color:var(--accent)}
+.cl-stat-lbl{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.cl-item{background:var(--card);border-radius:13px;border:1.5px solid var(--border);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh-sm);display:flex;align-items:center;gap:10px}
+.cl-num{width:26px;height:26px;border-radius:7px;background:var(--accent-bg);color:var(--accent);font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cl-info{flex:1;min-width:0}
+.cl-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-plate{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-weight:600;margin-top:2px}
+.cl-actions{display:flex;gap:5px;flex-shrink:0}
+.cl-ebtn,.cl-dbtn{width:30px;height:30px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.cl-empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:14px;line-height:2.5}
+.cl-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a2236;color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;font-family:'Cairo',sans-serif;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
+.cl-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="hdr">
+  <div class="hdr-top">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="hdr-ic">⛽</div>
+      <div><div class="hdr-t">محطة الوقود</div><div class="hdr-s">$ &nbsp;•&nbsp; ل.ل</div></div>
+    </div>
+    <div class="hdr-d" id="hdr-date"></div>
+    <button id="dark-btn" onclick="toggleDark()" style="background:var(--card2);border:1.5px solid var(--border);border-radius:10px;width:34px;height:34px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">🌙</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-tab="meters" id="tab-meters">العدادات</button>
+    <button class="tab" data-tab="credit" id="tab-credit">الآجل<span class="bdg" id="cr-badge" style="display:none">0</span></button>
+    <button class="tab" data-tab="tanks" id="tab-tanks">🛢️ الخزانات</button>
+    <button class="tab" data-tab="summary" id="tab-summary">الملخص</button>
+    <button class="tab" data-tab="archive" id="tab-archive">الأرشيف<span class="bdg" id="ar-badge" style="display:none;background:var(--accent)">0</span></button>
+    <button class="tab" data-tab="clients" id="tab-clients">👥 العملاء<span class="bdg" id="cl-badge" style="display:none;background:var(--green)">0</span></button>
+  </div>
+</div>
+
+<div id="content">
+
+<!-- PAGE 1 -->
+<div class="page active" id="page-meters">
+  <div class="card">
+    <div class="lbl">تاريخ اليوم</div>
+    <input type="date" id="dt" class="inp" oninput="onDate(this.value)">
+  </div>
+  <!-- Petrol -->
+  <div class="card" style="border-top:3px solid var(--petrol)">
+    <div class="fhdr">
+      <div class="fdot" style="background:var(--petrol);box-shadow:0 0 0 3px var(--petrol-bd)"></div>
+      <span class="fnm" style="color:var(--petrol)">بنزين 95</span>
+      <span class="fcur">دولار $</span>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div><div class="lbl">أول النهار</div><input type="number" class="inp" id="ps" placeholder="0" oninput="compute()"></div>
+      <div><div class="lbl">آخر النهار</div><input type="number" class="inp" id="pe" placeholder="0" oninput="compute()"></div>
+    </div>
+    <div style="margin-bottom:12px"><div class="lbl">سعر الليتر ($)</div><input type="number" class="inp" id="pp" placeholder="0.00" oninput="compute()"></div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="rbox" style="background:var(--petrol-bg);border-color:var(--petrol-bd)"><div class="rl">مباع</div><div class="rv" id="p-sold" style="color:var(--petrol)">0.00 L</div></div>
+      <div class="rbox" style="background:var(--petrol-bg);border-color:var(--petrol-bd)"><div class="rl">الإجمالي ($)</div><div class="rv" id="p-tot" style="color:var(--petrol)">$0.00</div></div>
+    </div>
+    <button class="cpbtn" style="border:1.5px solid var(--petrol-bd);color:var(--petrol);background:var(--petrol-bg)" onclick="copyEnd('p')">← نسخ نهاية اليوم كبداية الغد</button>
+  </div>
+  <!-- Diesel -->
+  <div class="card" style="border-top:3px solid var(--diesel)">
+    <div class="fhdr">
+      <div class="fdot" style="background:var(--diesel);box-shadow:0 0 0 3px var(--diesel-bd)"></div>
+      <span class="fnm" style="color:var(--diesel)">ديزل</span>
+      <span class="fcur">ليرة ل.ل</span>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div><div class="lbl">أول النهار</div><input type="number" class="inp" id="ds" placeholder="0" oninput="compute()"></div>
+      <div><div class="lbl">آخر النهار</div><input type="number" class="inp" id="de" placeholder="0" oninput="compute()"></div>
+    </div>
+    <div style="margin-bottom:12px"><div class="lbl">سعر الليتر (ل.ل)</div><input type="number" class="inp" id="dp" placeholder="0" oninput="compute()"></div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="rbox" style="background:var(--diesel-bg);border-color:var(--diesel-bd)"><div class="rl">مباع</div><div class="rv" id="d-sold" style="color:var(--diesel)">0.00 L</div></div>
+      <div class="rbox" style="background:var(--diesel-bg);border-color:var(--diesel-bd)"><div class="rl">الإجمالي (ل.ل)</div><div class="rv" id="d-tot" style="color:var(--diesel)">0 ل.ل</div></div>
+    </div>
+    <button class="cpbtn" style="border:1.5px solid var(--diesel-bd);color:var(--diesel);background:var(--diesel-bg)" onclick="copyEnd('d')">← نسخ نهاية اليوم كبداية الغد</button>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,#eff4ff,#f0fdf4)">
+    <div class="sdiv">ملخص اليوم</div>
+    <div class="g2">
+      <div class="rbox" style="background:#fff;border-color:var(--petrol-bd)"><div class="rl">بنزين مباع</div><div class="rv" id="sm-pl" style="color:var(--petrol)">0.00 L</div></div>
+      <div class="rbox" style="background:#fff;border-color:var(--diesel-bd)"><div class="rl">ديزل مباع</div><div class="rv" id="sm-dl" style="color:var(--diesel)">0.00 L</div></div>
+      <div class="rbox" style="background:#fff;border-color:var(--petrol-bd)"><div class="rl">مبيعات بنزين</div><div class="rv" id="sm-pr" style="color:var(--petrol)">$0.00</div></div>
+      <div class="rbox" style="background:#fff;border-color:var(--diesel-bd)"><div class="rl">مبيعات ديزل</div><div class="rv" id="sm-dr" style="color:var(--diesel)">0 ل.ل</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2 -->
+<div class="page" id="page-credit">
+  <div class="card" style="border-top:3px solid var(--petrol)">
+    <div class="fhdr">
+      <div class="fdot" style="background:var(--petrol);box-shadow:0 0 0 3px var(--petrol-bd)"></div>
+      <span class="fnm" style="color:var(--petrol)">بنزين 95</span>
+      <span id="pc-cnt" style="margin-right:auto;font-size:12px;color:var(--muted);font-weight:700;background:var(--card2);padding:2px 8px;border-radius:20px;border:1px solid var(--border)">0 عميل</span>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="rbox" style="background:var(--petrol-bg);border-color:var(--petrol-bd)"><div class="rl">إجمالي الليترات</div><div class="rv" id="pc-tl" style="color:var(--petrol)">0.00 L</div></div>
+      <div class="rbox" style="background:var(--petrol-bg);border-color:var(--petrol-bd)"><div class="rl">إجمالي المبلغ ($)</div><div class="rv" id="pc-ta" style="color:var(--petrol)">$0.00</div></div>
+    </div>
+    <div style="margin-bottom:10px"><button onclick="clearCredit('p')" style="width:100%;padding:9px;background:var(--danger-bg);color:var(--danger);border:1.5px solid #fca5a5;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🗑️ مسح كل أرقام الآجل</button></div>
+    <div class="crh"><div style="text-align:center">#</div><div>ليترات</div><div style="text-align:left">المبلغ</div></div>
+    <div id="pc-rows"></div>
+  </div>
+  <div class="card" style="border-top:3px solid var(--diesel)">
+    <div class="fhdr">
+      <div class="fdot" style="background:var(--diesel);box-shadow:0 0 0 3px var(--diesel-bd)"></div>
+      <span class="fnm" style="color:var(--diesel)">ديزل</span>
+      <span id="dc-cnt" style="margin-right:auto;font-size:12px;color:var(--muted);font-weight:700;background:var(--card2);padding:2px 8px;border-radius:20px;border:1px solid var(--border)">0 عميل</span>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="rbox" style="background:var(--diesel-bg);border-color:var(--diesel-bd)"><div class="rl">إجمالي الليترات</div><div class="rv" id="dc-tl" style="color:var(--diesel)">0.00 L</div></div>
+      <div class="rbox" style="background:var(--diesel-bg);border-color:var(--diesel-bd)"><div class="rl">إجمالي المبلغ (ل.ل)</div><div class="rv" id="dc-ta" style="color:var(--diesel)">0 ل.ل</div></div>
+    </div>
+    <div style="margin-bottom:10px"><button onclick="clearCredit('d')" style="width:100%;padding:9px;background:var(--danger-bg);color:var(--danger);border:1.5px solid #fca5a5;border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🗑️ مسح كل أرقام الآجل</button></div>
+    <div class="crh"><div style="text-align:center">#</div><div>ليترات</div><div style="text-align:left">المبلغ</div></div>
+    <div id="dc-rows"></div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,var(--warning-bg),#fff)">
+    <div class="sdiv">إجمالي الآجل</div>
+    <div class="g2">
+      <div class="rbox" style="background:#fff;border-color:var(--petrol-bd)"><div class="rl">بنزين آجل ($)</div><div class="rv" id="cr-gp" style="color:var(--petrol)">$0.00</div></div>
+      <div class="rbox" style="background:#fff;border-color:var(--diesel-bd)"><div class="rl">ديزل آجل (ل.ل)</div><div class="rv" id="cr-gd" style="color:var(--diesel)">0 ل.ل</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE TANKS -->
+<div class="page" id="page-tanks">
+
+  <!-- تحذير تجاوز الحد -->
+  <div id="tank-overflow-warn" style="display:none;background:#fef2f2;border:2px solid #dc2626;border-radius:14px;padding:14px 16px;margin-bottom:12px;font-size:13px;font-weight:700;color:#dc2626;line-height:1.8"></div>
+
+  <!-- خزان البنزين 95 -->
+  <div class="card" style="border-top:3px solid var(--petrol)">
+    <div class="fhdr">
+      <div class="fdot" style="background:var(--petrol);box-shadow:0 0 0 3px var(--petrol-bd)"></div>
+      <span class="fnm" style="color:var(--petrol)">⛽ خزان البنزين 95</span>
+      <span class="fcur">دولار $</span>
+    </div>
+    <!-- شريط الخزان -->
+    <div class="tank-tr"><div class="tank-fl" id="pt-fill" style="width:100%;background:var(--accent)"></div></div>
+    <div class="tank-info" style="font-size:17px;font-weight:900;font-family:'JetBrains Mono',monospace">
+      <span id="pt-l" style="font-size:17px;color:var(--accent)">8,500.00 L</span>
+      <span id="pt-p" style="font-size:17px;font-weight:900;color:var(--accent)">100.0%</span>
+      <span style="font-size:17px">8,500.00 L</span>
+    </div>
+    <button onclick="toggleTankEdit('p')" style="display:none"></button>
+
+    <!-- رصيد البداية -->
+    <div style="margin-top:12px;background:var(--petrol-bg);border:1.5px solid var(--petrol-bd);border-radius:12px;padding:10px 14px">
+      <div class="lbl" style="color:var(--petrol);margin-bottom:4px">📦 رصيد البداية (L)</div>
+      <input type="number" id="p-opening" class="inp" placeholder="الكمية الموجودة في الخزان الآن"
+        oninput="updOpening('p',this.value)"
+        style="font-size:16px;font-weight:800;font-family:JetBrains Mono,monospace;border-color:var(--petrol-bd)">
+    </div>
+
+    <!-- جدول الخانات الخمس -->
+    <div style="margin-top:14px">
+      <button id="toggle-p-btn" onclick="toggleTankEntries('p')" style="width:100%;padding:9px;background:var(--petrol-bg);color:var(--petrol);border:1.5px solid var(--petrol-bd);border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:10px">▼ إخفاء الصهاريج</button>
+      <div id="tank-p-wrap">
+        <div id="tank-p-entries"></div>
+      </div>
+    </div>
+
+    <!-- إجمالي -->
+    <div class="g2" style="margin-top:12px">
+      <div class="rbox" style="background:var(--petrol-bg);border-color:var(--petrol-bd)"><div class="rl">إجمالي الدخول</div><div class="rv" id="tp-total-in" style="color:var(--petrol)">0.00 L</div></div>
+      <div class="rbox" style="background:var(--danger-bg);border-color:#fca5a5"><div class="rl">إجمالي الخروج</div><div class="rv" id="tp-total-out" style="color:var(--danger)">0.00 L</div></div>
+    </div>
+  </div>
+
+  <!-- خزان الديزل -->
+  <div class="card" style="border-top:3px solid var(--diesel)">
+    <div class="fhdr">
+      <div class="fdot" style="background:var(--diesel);box-shadow:0 0 0 3px var(--diesel-bd)"></div>
+      <span class="fnm" style="color:var(--diesel)">🛢️ خزان الديزل</span>
+      <span class="fcur">ليرة ل.ل</span>
+    </div>
+    <!-- شريط الخزان -->
+    <div class="tank-tr"><div class="tank-fl" id="dt-fill" style="width:100%;background:var(--accent)"></div></div>
+    <div class="tank-info" style="font-size:17px;font-weight:900;font-family:'JetBrains Mono',monospace">
+      <span id="dt-l" style="font-size:17px;color:var(--accent)">38,500.00 L</span>
+      <span id="dt-p" style="font-size:17px;font-weight:900;color:var(--accent)">100.0%</span>
+      <span style="font-size:17px">38,500.00 L</span>
+    </div>
+    <button onclick="toggleTankEdit('d')" style="display:none"></button>
+
+    <!-- رصيد البداية -->
+    <div style="margin-top:12px;background:var(--diesel-bg);border:1.5px solid var(--diesel-bd);border-radius:12px;padding:10px 14px">
+      <div class="lbl" style="color:var(--diesel);margin-bottom:4px">📦 رصيد البداية (L)</div>
+      <input type="number" id="d-opening" class="inp" placeholder="الكمية الموجودة في الخزان الآن"
+        oninput="updOpening('d',this.value)"
+        style="font-size:16px;font-weight:800;font-family:JetBrains Mono,monospace;border-color:var(--diesel-bd)">
+    </div>
+
+    <!-- جدول الخانات الخمس -->
+    <div style="margin-top:14px">
+      <button id="toggle-d-btn" onclick="toggleTankEntries('d')" style="width:100%;padding:9px;background:var(--diesel-bg);color:var(--diesel);border:1.5px solid var(--diesel-bd);border-radius:10px;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:10px">▼ إخفاء الصهاريج</button>
+      <div id="tank-d-wrap">
+        <div id="tank-d-entries"></div>
+      </div>
+    </div>
+
+    <!-- إجمالي -->
+    <div class="g2" style="margin-top:12px">
+      <div class="rbox" style="background:var(--diesel-bg);border-color:var(--diesel-bd)"><div class="rl">إجمالي الدخول</div><div class="rv" id="td-total-in" style="color:var(--diesel)">0.00 L</div></div>
+      <div class="rbox" style="background:var(--danger-bg);border-color:#fca5a5"><div class="rl">إجمالي الخروج</div><div class="rv" id="td-total-out" style="color:var(--danger)">0.00 L</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PAGE 3 -->
+<div class="page" id="page-summary">
+  <div class="card" style="border-top:3px solid var(--petrol)">
+    <div class="fhdr"><div class="fdot" style="background:var(--petrol);box-shadow:0 0 0 3px var(--petrol-bd)"></div><span class="fnm" style="color:var(--petrol)">بنزين 95 — دولار</span></div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="rbox"><div class="rl">ليترات مباعة</div><div class="rv" id="sv-pl" style="color:var(--petrol)">0.00 L</div></div>
+      <div class="rbox"><div class="rl">إجمالي المبيعات</div><div class="rv" id="sv-pr" style="color:var(--petrol)">$0.00</div></div>
+      <div class="rbox" style="background:var(--warning-bg)"><div class="rl">آجل ($)</div><div class="rv" id="sv-pc" style="color:var(--warning)">$0.00</div></div>
+      <div class="rbox" style="background:var(--warning-bg)"><div class="rl">عملاء الآجل</div><div class="rv" id="sv-pcc" style="color:var(--warning)">0 عميل</div></div>
+    </div>
+    <div class="netbox" id="sv-pnb" style="background:var(--green-bg);border:1.5px solid #86efac">
+      <div class="nl">الصافي المحصَّل</div><div class="nv" id="sv-pn" style="color:var(--green)">$0.00</div>
+    </div>
+  </div>
+  <div class="card" style="border-top:3px solid var(--diesel)">
+    <div class="fhdr"><div class="fdot" style="background:var(--diesel);box-shadow:0 0 0 3px var(--diesel-bd)"></div><span class="fnm" style="color:var(--diesel)">ديزل — ليرة لبنانية</span></div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="rbox"><div class="rl">ليترات مباعة</div><div class="rv" id="sv-dl" style="color:var(--diesel)">0.00 L</div></div>
+      <div class="rbox"><div class="rl">إجمالي المبيعات</div><div class="rv" id="sv-dr" style="color:var(--diesel)">0 ل.ل</div></div>
+      <div class="rbox" style="background:var(--warning-bg)"><div class="rl">آجل (ل.ل)</div><div class="rv" id="sv-dc" style="color:var(--warning)">0 ل.ل</div></div>
+      <div class="rbox" style="background:var(--warning-bg)"><div class="rl">عملاء الآجل</div><div class="rv" id="sv-dcc" style="color:var(--warning)">0 عميل</div></div>
+    </div>
+    <div class="netbox" id="sv-dnb" style="background:var(--green-bg);border:1.5px solid #86efac">
+      <div class="nl">الصافي المحصَّل</div><div class="nv" id="sv-dn" style="color:var(--green)">0 ل.ل</div>
+    </div>
+  </div>
+  <div class="ng">
+    <div class="nc" style="border-top:3px solid var(--petrol)"><div class="ncl">صافي الدولار</div><div style="font-size:21px;font-weight:900;font-family:'JetBrains Mono',monospace" id="sv-np">$0.00</div></div>
+    <div class="nc" style="border-top:3px solid var(--diesel)"><div class="ncl">صافي الليرة</div><div style="font-size:17px;font-weight:900;font-family:'JetBrains Mono',monospace" id="sv-nd">0 ل.ل</div></div>
+  </div>
+  <div class="cbox" id="sv-cb" style="background:var(--green-bg);border:2px solid #86efac">
+    <div class="ct" style="color:var(--green)">الإجمالي الموحَّد بالدولار</div>
+    <div class="cs" style="color:var(--muted)">بنزين + ديزل (rate: 89,700 ل.ل/$)</div>
+    <div class="cv" id="sv-cv" style="color:var(--green)">$0.00</div>
+    <div class="cd"><span style="color:var(--petrol)" id="cv-p">بنزين: $0.00</span><span style="color:var(--muted)">+</span><span style="color:var(--diesel)" id="cv-d">ديزل: $0.00</span></div>
+  </div>
+</div>
+
+<!-- PAGE 4 -->
+<div class="page" id="page-archive">
+  <button class="savbtn" onclick="saveDay()">💾 &nbsp;حفظ بيانات اليوم في الأرشيف</button>
+  <div class="bkrow">
+    <button class="bkbtn" style="background:var(--accent-bg);color:var(--accent);border:1.5px solid #bfdbfe" onclick="exportArchive()">📥 تصدير احتياطي</button>
+    <label class="bkbtn" style="background:var(--green-bg);color:var(--green);border:1.5px solid #86efac;cursor:pointer">
+      📤 استيراد نسخة<input type="file" accept=".json" style="display:none" onchange="importArchive(this)">
+    </label>
+  </div>
+  <div id="arch-list"></div>
+  <div id="arch-rpt" style="display:none;margin-top:6px">
+    <button class="rptbtn" onclick="openReport('dates')">📤 &nbsp;إرسال تقرير الأرشيف</button>
+    <button class="rptbtn" style="margin-top:8px;background:linear-gradient(135deg,#dc2626,#b91c1c);box-shadow:0 4px 14px rgba(220,38,38,.3)" onclick="openPdfPicker()">🖨️ &nbsp;تصدير PDF</button>
+  </div>
+</div>
+
+<!-- PDF Date Picker Modal -->
+<div class="mov" id="pdf-picker-mov" onclick="if(event.target===this)closePdfPicker()">
+  <div class="mbox">
+    <div class="mhnd"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div class="mtit">🖨️ اختر الأيام للتصدير</div>
+      <button class="mcls" onclick="closePdfPicker()">✕</button>
+    </div>
+    <div class="msub">اضغط على الأيام التي تريد تضمينها في التقرير</div>
+    <!-- Language toggle -->
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <span style="font-size:11px;font-weight:700;color:var(--muted)">لغة التقرير:</span>
+      <button id="lang-ar-btn" onclick="setPdfLang('ar')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--accent);background:var(--accent);color:#fff;font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🇸🇦 عربي</button>
+      <button id="lang-en-btn" onclick="setPdfLang('en')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);color:var(--muted);font-family:'Cairo',sans-serif;font-weight:700;font-size:13px;cursor:pointer">🇬🇧 English</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button onclick="pdfPickAll(true)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #bfdbfe;background:var(--accent-bg);color:var(--accent);font-family:'Cairo',sans-serif;font-weight:700;font-size:12px;cursor:pointer">✅ تحديد الكل</button>
+      <button onclick="pdfPickAll(false)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);color:var(--muted);font-family:'Cairo',sans-serif;font-weight:700;font-size:12px;cursor:pointer">☐ إلغاء الكل</button>
+    </div>
+    <div id="pdf-date-list" style="max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;margin-bottom:16px"></div>
+    <button onclick="exportPDFSelected()" style="width:100%;padding:13px;background:linear-gradient(135deg,#dc2626,#b91c1c);border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:900;font-family:'Cairo',sans-serif;cursor:pointer;box-shadow:0 3px 12px rgba(220,38,38,.3)">🖨️ تصدير الأيام المحددة</button>
+  </div>
+</div>
+
+<!-- PAGE CLIENTS -->
+<div class="page" id="page-clients">
+  <div class="cl-add-card">
+    <div class="cl-add-title">➕ إضافة عميل جديد</div>
+    <div class="g2" style="margin-bottom:12px">
+      <div>
+        <div class="lbl">الاسم</div>
+        <input type="text" class="inp" id="cl-new-name" placeholder="اسم العميل" style="font-family:'Cairo',sans-serif" onkeydown="if(event.key==='Enter')document.getElementById('cl-new-plate').focus()">
+      </div>
+      <div>
+        <div class="lbl">رقم السيارة</div>
+        <input type="text" class="inp" id="cl-new-plate" placeholder="مثال: ب ت م 123" style="font-family:'JetBrains Mono',monospace" onkeydown="if(event.key==='Enter')clAddClient()">
+      </div>
+    </div>
+    <button class="cl-add-btn" onclick="clAddClient()">✅ حفظ العميل</button>
+  </div>
+
+  <div class="cl-stat" id="cl-stat" style="display:none">
+    <div class="cl-stat-box">
+      <div class="cl-stat-val" id="cl-stat-total">0</div>
+      <div class="cl-stat-lbl">إجمالي العملاء</div>
+    </div>
+    <div class="cl-stat-box">
+      <div class="cl-stat-val" id="cl-stat-filtered">0</div>
+      <div class="cl-stat-lbl">نتائج البحث</div>
+    </div>
+  </div>
+
+  <div class="cl-search-wrap">
+    <span class="cl-search-ic">🔍</span>
+    <input type="text" class="cl-search-inp" id="cl-search" placeholder="ابحث بالاسم أو رقم السيارة..." oninput="clRender()">
+  </div>
+
+  <div class="sdiv">قائمة العملاء</div>
+  <div id="cl-list"></div>
+</div>
+
+</div></div>
+
+<div class="mov" id="cl-edit-mov" onclick="if(event.target===this)clCloseEdit()">
+  <div class="mbox">
+    <div class="mhnd"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="mtit">✏️ تعديل العميل</div>
+      <button class="mcls" onclick="clCloseEdit()">✕</button>
+    </div>
+    <div class="mg2" style="margin-bottom:14px">
+      <div>
+        <div class="lbl">الاسم</div>
+        <input type="text" class="inp" id="cl-edit-name" placeholder="اسم العميل" style="font-family:'Cairo',sans-serif">
+      </div>
+      <div>
+        <div class="lbl">رقم السيارة</div>
+        <input type="text" class="inp" id="cl-edit-plate" placeholder="رقم السيارة" style="font-family:'JetBrains Mono',monospace">
+      </div>
+    </div>
+    <button class="msvbtn" onclick="clSaveEdit()">💾 حفظ التعديل</button>
+  </div>
+</div>
+
+<div class="mov" id="edit-mov" onclick="closeEditOutside(event)"><div class="mbox" id="edit-box"></div></div>
+<div class="mov" id="rpt-mov" onclick="closeRptOutside(event)"><div class="mbox" id="rpt-box"></div></div>
+
+<script>
+const RATE=89700,PCAP=8500,DCAP=38500,NR=30,SK='fuel_v3',DK='fuel_draft_v3';
+const DB_KEY='fuel_clients_db';
+let _clEditIdx=-1;
+let pRef=0,dRef=0;
+let pCr=blank(),dCr=blank();
+let tankP=[],tankD=[];
+let pOpening=0,dOpening=0;
+function blank(){return Array.from({length:NR},()=>({name:'',litres:0}));}
+function blankTank(){return {driver:'',truck:'',qIn:'',qOut:'',note:''};}
+
+// ========== TANKS ==========
+const TANK_ROWS=5;
+function blankTankEntries(){return Array.from({length:TANK_ROWS},()=>({driver:'',truck:'',qIn:'',qOut:'',note:''}));}
+
+function buildTankEntries(fuel){
+  const arr=fuel==='p'?tankP:tankD;
+  const color=fuel==='p'?'var(--petrol)':'var(--diesel)';
+  const bg=fuel==='p'?'var(--petrol-bg)':'var(--diesel-bg)';
+  const bd=fuel==='p'?'var(--petrol-bd)':'var(--diesel-bd)';
+  const container=document.getElementById('tank-'+fuel+'-entries');
+  container.innerHTML='';
+  arr.forEach((row,i)=>{
+    const qIn=parseFloat(row.qIn)||0;
+    const qOut=parseFloat(row.qOut)||0;
+    const rem=qIn-qOut;
+    const div=document.createElement('div');
+    div.style.cssText='background:var(--card2);border:1.5px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden';
+    div.innerHTML=
+      '<div style="background:'+bg+';border-bottom:1.5px solid '+bd+';padding:4px 12px;display:flex;align-items:center;justify-content:space-between">'+
+        '<span style="font-size:12px;font-weight:900;color:'+color+'">صهريج '+(i+1)+'</span>'+
+        '<span id="tank-'+fuel+'-rem-'+i+'" style="font-size:12px;font-weight:900;font-family:JetBrains Mono,monospace;color:'+(rem>0?color:rem<0?'var(--danger)':'var(--muted)')+'">'+
+          (rem!==0?fL(rem)+' L':'—')+
+        '</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 4px">'+
+        '<div><div class="lbl">اسم السائق</div>'+
+          '<input type="text" value="'+(row.driver||'')+'" placeholder="السائق" '+
+          'oninput="updTankEntry(\''+fuel+'\','+i+',\'driver\',this.value)" '+
+          'style="width:100%;border:1.5px solid var(--border);border-radius:9px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;background:var(--surface);color:var(--text)">'+
+        '</div>'+
+        '<div><div class="lbl">رقم الصهريج</div>'+
+          '<input type="text" value="'+(row.truck||'')+'" placeholder="رقم الصهريج" '+
+          'oninput="updTankEntry(\''+fuel+'\','+i+',\'truck\',this.value)" '+
+          'style="width:100%;border:1.5px solid var(--border);border-radius:9px;padding:7px 10px;font-size:13px;font-family:JetBrains Mono,monospace;background:var(--surface);color:var(--text)">'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 12px 4px">'+
+        '<div><div class="lbl" style="color:var(--green)">↑ كمية الدخول (L)</div>'+
+          '<input type="number" value="'+(row.qIn||'')+'" placeholder="0" '+
+          'oninput="updTankEntry(\''+fuel+'\','+i+',\'qIn\',this.value)" '+
+          'style="width:100%;border:1.5px solid #86efac;border-radius:9px;padding:7px 10px;font-size:15px;font-weight:800;font-family:JetBrains Mono,monospace;background:var(--green-bg);color:var(--green)">'+
+        '</div>'+
+        '<div><div class="lbl" style="color:var(--danger)">↓ كمية الخروج (L)</div>'+
+          '<input type="number" value="'+(row.qOut||'')+'" placeholder="0" '+
+          'oninput="updTankEntry(\''+fuel+'\','+i+',\'qOut\',this.value)" '+
+          'style="width:100%;border:1.5px solid #fca5a5;border-radius:9px;padding:7px 10px;font-size:15px;font-weight:800;font-family:JetBrains Mono,monospace;background:var(--danger-bg);color:var(--danger)">'+
+        '</div>'+
+      '</div>'+
+      '<div style="padding:4px 12px 10px">'+
+        '<div class="lbl">ملاحظات</div>'+
+        '<input type="text" value="'+(row.note||'')+'" placeholder="ملاحظة (اختياري)" '+
+        'oninput="updTankEntry(\''+fuel+'\','+i+',\'note\',this.value)" '+
+        'style="width:100%;border:1.5px solid var(--border);border-radius:9px;padding:7px 10px;font-size:13px;font-family:Cairo,sans-serif;background:var(--surface);color:var(--text)">'+
+      '</div>';
+    container.appendChild(div);
+  });
+  calcTankTotals(fuel);
+}
+
+function updTankEntry(fuel,i,field,val){
+  const arr=fuel==='p'?tankP:tankD;
+  if(!arr[i]) return;
+  arr[i][field]=val;
+  // فقط حدّث الكمية الباقية لهذا الصهريج بدون إعادة بناء الجدول
+  const qIn=parseFloat(arr[i].qIn)||0;
+  const qOut=parseFloat(arr[i].qOut)||0;
+  const rem=qIn-qOut;
+  const remEl=document.getElementById('tank-'+fuel+'-rem-'+i);
+  if(remEl){
+    remEl.textContent=rem!==0?fL(rem)+' L':'—';
+    remEl.style.color=rem>0?(fuel==='p'?'var(--petrol)':'var(--diesel)'):rem<0?'var(--danger)':'var(--muted)';
+  }
+  calcTankTotals(fuel);
+  compute();
+  saveDraft();
+}
+
+function calcTankTotals(fuel){
+  const arr=fuel==='p'?tankP:tankD;
+  let totalIn=0,totalOut=0;
+  arr.forEach(r=>{totalIn+=(parseFloat(r.qIn)||0);totalOut+=(parseFloat(r.qOut)||0);});
+  const pre=fuel==='p'?'tp':'td';
+  tx(pre+'-total-in',fL(totalIn)+' L');
+  tx(pre+'-total-out',fL(totalOut)+' L');
+}
+
+function toggleTankEntries(fuel){
+  const wrap=document.getElementById('tank-'+fuel+'-wrap');
+  const btn=document.getElementById('toggle-'+fuel+'-btn');
+  const color=fuel==='p'?'var(--petrol)':'var(--diesel)';
+  const bg=fuel==='p'?'var(--petrol-bg)':'var(--diesel-bg)';
+  const bd=fuel==='p'?'var(--petrol-bd)':'var(--diesel-bd)';
+  const hidden=wrap.style.display==='none';
+  wrap.style.display=hidden?'block':'none';
+  btn.textContent=hidden?'▼ إخفاء الصهاريج':'▶ إظهار الصهاريج';
+}
+
+function buildTankTable(fuel){buildTankEntries(fuel);}
+
+function updOpening(fuel,val){
+  if(fuel==='p'){pOpening=parseFloat(val)||0;}
+  else{dOpening=parseFloat(val)||0;}
+  compute();saveDraft();
+}
+// ===========================
+
+function saveDraft(){
+  try{
+    const d={
+      dt:document.getElementById('dt').value,
+      ps:document.getElementById('ps').value,
+      pe:document.getElementById('pe').value,
+      pp:document.getElementById('pp').value,
+      ds:document.getElementById('ds').value,
+      de:document.getElementById('de').value,
+      dp:document.getElementById('dp').value,
+      pRef,dRef,pOpening,dOpening,
+      pCr:JSON.parse(JSON.stringify(pCr)),
+      dCr:JSON.parse(JSON.stringify(dCr)),
+      tankP:JSON.parse(JSON.stringify(tankP)),
+      tankD:JSON.parse(JSON.stringify(tankD))
+    };
+    localStorage.setItem(DK,JSON.stringify(d));
+  }catch(e){}
+}
+
+function loadDraft(){
+  try{
+    const raw=localStorage.getItem(DK);
+    if(!raw)return false;
+    const d=JSON.parse(raw);
+    document.getElementById('dt').value=d.dt||new Date().toISOString().slice(0,10);
+    document.getElementById('hdr-date').textContent=d.dt||document.getElementById('dt').value;
+    document.getElementById('ps').value=d.ps||'';
+    document.getElementById('pe').value=d.pe||'';
+    document.getElementById('pp').value=d.pp||'';
+    document.getElementById('ds').value=d.ds||'';
+    document.getElementById('de').value=d.de||'';
+    document.getElementById('dp').value=d.dp||'';
+    pRef=d.pRef||0;dRef=d.dRef||0;
+    pOpening=d.pOpening||0;dOpening=d.dOpening||0;
+    pCr=d.pCr||blank();dCr=d.dCr||blank();
+    tankP=d.tankP&&d.tankP.length?d.tankP:Array.from({length:TANK_ROWS},()=>blankTank());
+    tankD=d.tankD&&d.tankD.length?d.tankD:Array.from({length:TANK_ROWS},()=>blankTank());
+    // تأكد دائماً من وجود 5 خانات بالضبط
+    while(tankP.length<TANK_ROWS) tankP.push(blankTank());
+    while(tankD.length<TANK_ROWS) tankD.push(blankTank());
+    tankP=tankP.slice(0,TANK_ROWS);
+    tankD=tankD.slice(0,TANK_ROWS);
+    return true;
+  }catch(e){return false;}
+}
+
+const f$=n=>{const v=Math.round(n*100)/100;return v%1===0?v.toLocaleString('en-US'):v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});};
+const fLL=n=>Math.round(n).toLocaleString('en-US');
+const fL=n=>{const v=Math.round(n*100)/100;return v%1===0?v.toLocaleString('en-US'):v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});};
+const g=id=>parseFloat(document.getElementById(id).value)||0;
+const tx=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+const pSold=()=>Math.max(0,g('pe')-g('ps'));
+const dSold=()=>Math.max(0,g('de')-g('ds'));
+const pPrc=()=>g('pp');
+const dPrc=()=>g('dp');
+
+function init(){
+  initDark();
+  const t=new Date().toISOString().slice(0,10);
+  document.getElementById('dt').value=t;
+  document.getElementById('hdr-date').textContent=t;
+  document.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',()=>switchTab(tab.dataset.tab));
+  });
+  loadDraft();
+  if(!tankP.length) tankP=Array.from({length:TANK_ROWS},()=>blankTank());
+  if(!tankD.length) tankD=Array.from({length:TANK_ROWS},()=>blankTank());
+  buildRows();compute();renderArchive();
+  buildTankTable('p');buildTankTable('d');
+  if(pOpening){const el=document.getElementById('p-opening');if(el)el.value=pOpening;}
+  if(dOpening){const el=document.getElementById('d-opening');if(el)el.value=dOpening;}
+  document.getElementById("content").addEventListener("input",saveDraft);
+}
+
+function onDate(v){document.getElementById('hdr-date').textContent=v;saveDraft();}
+
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===id));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id));
+  if(id==='summary')calcSummary();
+  if(id==='archive')renderArchive();
+  if(id==='clients')clRender();
+}
+
+function tankBar(pre,litres,cap){
+  const over=litres>cap;
+  const pct=cap>0?Math.min(100,litres/cap*100):0;
+  const c=over?'#dc2626':pct<15?'#dc2626':pct<30?'#d97706':'#2563eb';
+  document.getElementById(pre+'-fill').style.cssText='width:'+pct+'%;background:'+c;
+  const lEl=document.getElementById(pre+'-l');
+  lEl.textContent=fL(litres)+' L'+(over?' ⚠️ تجاوز الحد!':'');
+  lEl.style.color=over?'#dc2626':c;
+  const pe=document.getElementById(pre+'-p');
+  pe.textContent=over?'⛔ '+fL(litres-cap)+' L زيادة':pct.toFixed(1)+'%';
+  pe.style.color=over?'#dc2626':c;
+}
+
+function checkOverflow(pCurrent,dCurrent){
+  const pOver=pCurrent>PCAP, dOver=dCurrent>DCAP;
+  let warn='';
+  if(pOver) warn+='⛔ خزان البنزين تجاوز الحد الأقصى!\nالكمية: '+fL(pCurrent)+' L / الحد: '+fL(PCAP)+' L\nالزيادة: '+fL(pCurrent-PCAP)+' L\n\n';
+  if(dOver) warn+='⛔ خزان الديزل تجاوز الحد الأقصى!\nالكمية: '+fL(dCurrent)+' L / الحد: '+fL(DCAP)+' L\nالزيادة: '+fL(dCurrent-DCAP)+' L';
+  const box=document.getElementById('tank-overflow-warn');
+  if(box){
+    box.style.display=(pOver||dOver)?'block':'none';
+    box.innerHTML=(pOver||dOver)?'⛔ '+warn.replace(/\n/g,'<br>'):'';
+  }
+}
+
+function compute(){
+  const ps=pSold(),ds=dSold(),pp=pPrc(),dp=dPrc();
+  // احسب pRef و dRef من خانات الصهاريج مطروحاً منها المبيعات
+  let pNetIn=0,pNetOut=0,dNetIn=0,dNetOut=0;
+  tankP.forEach(r=>{pNetIn+=(parseFloat(r.qIn)||0);pNetOut+=(parseFloat(r.qOut)||0);});
+  tankD.forEach(r=>{dNetIn+=(parseFloat(r.qIn)||0);dNetOut+=(parseFloat(r.qOut)||0);});
+  const pTankBase=pNetIn-pNetOut;
+  const dTankBase=dNetIn-dNetOut;
+  // الخزان = رصيد البداية + دخول الصهاريج - خروج الصهاريج - مبيعات اليوم
+  const pCurrent=Math.max(0,pOpening+pNetIn-pNetOut-ps);
+  const dCurrent=Math.max(0,dOpening+dNetIn-dNetOut-ds);
+  tankBar('pt',pCurrent,PCAP);
+  tankBar('dt',dCurrent,DCAP);
+  checkOverflow(pCurrent,dCurrent);
+  tx('p-sold',fL(ps)+' L');tx('p-tot','$'+f$(ps*pp));
+  tx('d-sold',fL(ds)+' L');tx('d-tot',fLL(ds*dp)+' ل.ل');
+  tx('sm-pl',fL(ps)+' L');tx('sm-dl',fL(ds)+' L');
+  tx('sm-pr','$'+f$(ps*pp));tx('sm-dr',fLL(ds*dp)+' ل.ل');
+  calcCredit();
+}
+
+function buildRows(){
+  buildFuelRows('p','pc',pCr,'var(--petrol)');
+  buildFuelRows('d','dc',dCr,'var(--diesel)');
+  calcCredit();
+}
+
+function buildFuelRows(fuel,pre,arr,color){
+  const c=document.getElementById(pre+'-rows');
+  c.innerHTML='';
+  arr.forEach((row,i)=>{
+    const d=document.createElement('div');
+    d.style.cssText='background:var(--card2);border:1.5px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden';
+    const hasApp=row.app!==false;
+    const appColor=fuel==='p'?'var(--petrol)':'var(--diesel)';
+    const appBg=fuel==='p'?'var(--petrol-bg)':'var(--diesel-bg)';
+    const appBd=fuel==='p'?'var(--petrol-bd)':'var(--diesel-bd)';
+    const appStyle='padding:5px 10px;border-radius:8px;border:1.5px solid '+(hasApp?appBd:'var(--border)')+';background:'+(hasApp?appBg:'var(--card2)')+';color:'+(hasApp?appColor:'var(--muted)')+';font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap';
+    d.innerHTML=
+      '<div style="background:var(--border);padding:2px 10px;font-size:11px;font-weight:700;color:var(--muted);text-align:center">'+(i+1)+'</div>'+
+      '<div style="padding:8px 10px 4px;display:flex;gap:6px;align-items:center">'+
+        '<div class="ac-wrap" id="acwrap-'+pre+'-'+i+'">'+
+          '<input type="text" class="inp" id="'+pre+'-name'+i+'" style="font-size:13px;padding:7px 10px;border-radius:8px;color:var(--text);font-family:Cairo,sans-serif;width:100%;margin-bottom:0" placeholder="اسم / رقم السيارة (اختياري)" value="'+(row.name||'')+'" '+
+          'oninput="updName(\''+fuel+'\','+i+',this.value);showAC(\''+pre+'\','+i+')" '+
+          'onkeydown="navAC(event,\''+pre+'\','+i+',\''+fuel+'\')" '+
+          'autocomplete="off">'+
+          '<div class="ac-list" id="ac-'+pre+'-'+i+'"></div>'+
+        '</div>'+
+        '<button id="'+pre+'-app'+i+'" onclick="toggleApp(\''+fuel+'\',\''+pre+'\','+i+')" style="'+appStyle+'">App</button>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;padding:4px 10px 8px">'+
+        '<input type="number" class="inp" style="padding:5px 7px;font-size:20px;font-weight:800;font-family:JetBrains Mono,monospace;height:40px" placeholder="0" value="'+(row.litres||'')+'" '+
+        'oninput="updLitres(\''+fuel+'\','+i+',this.value);autoNext(event,\''+pre+'\','+i+','+arr.length+')" '+
+        'onkeydown="crNextRow(event,\''+pre+'\','+i+','+arr.length+')">'+
+        '<div class="cramt" id="'+pre+'-a'+i+'" style="color:'+color+'">—</div>'+
+      '</div>';
+    c.appendChild(d);
+  });
+}
+
+function toggleApp(fuel,pre,i){
+  const arr=fuel==='p'?pCr:dCr;
+  arr[i].app=(arr[i].app===false)?true:false;
+  const btn=document.getElementById(pre+'-app'+i);
+  if(!btn)return;
+  const hasApp=arr[i].app!==false;
+  const appColor=fuel==='p'?'var(--petrol)':'var(--diesel)';
+  const appBg=fuel==='p'?'var(--petrol-bg)':'var(--diesel-bg)';
+  const appBd=fuel==='p'?'var(--petrol-bd)':'var(--diesel-bd)';
+  btn.style.borderColor=hasApp?appBd:'var(--border)';
+  btn.style.background=hasApp?appBg:'var(--card2)';
+  btn.style.color=hasApp?appColor:'var(--muted)';
+  saveDraft();
+}
+
+function crNextRow(e,pre,i,total){
+  // انتقال تلقائي بـ Enter أو Tab
+  if(e.key==='Enter'||e.key==='Tab'){
+    e.preventDefault();
+    goNextRow(pre,i,total);
+  }
+}
+
+function autoNext(e,pre,i,total){
+  // انتقال تلقائي عند إدخال 2+ خانة (مع أو بدون نقطة/فاصلة)
+  const v=e.target.value;
+  if(v.length>=2){
+    // تأخير أطول للسماح بإدخال أرقام أطول
+    clearTimeout(e.target._t);
+    e.target._t=setTimeout(()=>{
+      if(e.target.value===v) goNextRow(pre,i,total);
+    },1200);
+  }
+}
+
+function goNextRow(pre,i,total){
+  const next=i+1;
+  if(next<total){
+    const rows=document.getElementById(pre+'-rows').querySelectorAll('input[type=number]');
+    if(rows[next]){
+      rows[next].focus();
+      rows[next].select();
+      rows[next].scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+  }
+}
+
+function toggleTankEdit(t){
+  const el=document.getElementById(t+'t-edit');
+  if(!el) return;
+  const visible=el.style.display==='block';
+  el.style.display=visible?'none':'block';
+  if(!visible){
+    const cap=t==='p'?8500:38500;
+    const cur=t==='p'?draft.pT:draft.dT;
+    document.getElementById(t+'t-manual').value=cur||cap;
+    document.getElementById(t+'t-manual').focus();
+    document.getElementById(t+'t-manual').select();
+  }
+}
+
+function setTankManual(t){
+  const val=parseFloat(document.getElementById(t+'t-manual').value);
+  const cap=t==='p'?PCAP:DCAP;
+  if(isNaN(val)||val<0||val>cap){
+    alert('الكمية يجب أن تكون بين 0 و '+cap+' L');
+    return;
+  }
+  // نحسب pRef الجديد بحيث PCAP - pSold + pRef = val
+  if(t==='p'){pRef=val-PCAP+pSold();}
+  else{dRef=val-DCAP+dSold();}
+  document.getElementById(t+'t-edit').style.display='none';
+  compute();
+  saveDraft();
+}
+
+function clearCredit(f){
+  if(!confirm('هل أنت متأكد من مسح كل أرقام الآجل؟')) return;
+  if(f==='p'){pCr=blank();}else{dCr=blank();}
+  buildRows();calcCredit();saveDraft();
+}
+
+function updName(f,i,v){(f==='p'?pCr:dCr)[i].name=v;calcCredit();saveDraft();}
+function updLitres(f,i,v){(f==='p'?pCr:dCr)[i].litres=parseFloat(v)||0;calcCredit();saveDraft();}
+
+function calcCredit(){
+  const pp=pPrc(),dp=dPrc();
+  let pL=0,pA=0,pC=0,dL=0,dA=0,dC=0;
+  pCr.forEach((r,i)=>{
+    const a=(r.litres||0)*pp;pL+=r.litres||0;pA+=a;
+    if(r.name||r.litres)pC++;
+    const e=document.getElementById('pc-a'+i);if(e)e.textContent=a>0?'$'+f$(a):'—';
+  });
+  dCr.forEach((r,i)=>{
+    const a=(r.litres||0)*dp;dL+=r.litres||0;dA+=a;
+    if(r.name||r.litres)dC++;
+    const e=document.getElementById('dc-a'+i);if(e)e.textContent=a>0?fLL(a)+' ل.ل':'—';
+  });
+  tx('pc-tl',fL(pL)+' L');tx('pc-ta','$'+f$(pA));tx('pc-cnt',pC+' عميل');
+  tx('dc-tl',fL(dL)+' L');tx('dc-ta',fLL(dA)+' ل.ل');tx('dc-cnt',dC+' عميل');
+  tx('cr-gp','$'+f$(pA));tx('cr-gd',fLL(dA)+' ل.ل');
+  const tot=pC+dC;
+  const b=document.getElementById('cr-badge');b.style.display=tot>0?'flex':'none';b.textContent=tot;
+}
+
+function calcSummary(){
+  const ps=pSold(),ds=dSold(),pp=pPrc(),dp=dPrc();
+  const pR=ps*pp,dR=ds*dp;
+  const pCA=pCr.reduce((s,r)=>s+(r.litres||0),0)*pp;
+  const dCA=dCr.reduce((s,r)=>s+(r.litres||0),0)*dp;
+  const pCC=pCr.filter(r=>r.name||r.litres).length;
+  const dCC=dCr.filter(r=>r.name||r.litres).length;
+  const pN=pR-pCA,dN=dR-dCA,cmb=pN+dN/RATE;
+  tx('sv-pl',fL(ps)+' L');tx('sv-pr','$'+f$(pR));tx('sv-pc','$'+f$(pCA));tx('sv-pcc',pCC+' عميل');
+  tx('sv-dl',fL(ds)+' L');tx('sv-dr',fLL(dR)+' ل.ل');tx('sv-dc',fLL(dCA)+' ل.ل');tx('sv-dcc',dCC+' عميل');
+  const pne=document.getElementById('sv-pn');pne.textContent='$'+f$(pN);pne.style.color=pN>=0?'var(--green)':'var(--red)';
+  const pnb=document.getElementById('sv-pnb');pnb.style.background=pN>=0?'var(--green-bg)':'var(--danger-bg)';pnb.style.border='1.5px solid '+(pN>=0?'#86efac':'#fca5a5');
+  const dne=document.getElementById('sv-dn');dne.textContent=fLL(dN)+' ل.ل';dne.style.color=dN>=0?'var(--green)':'var(--red)';
+  const dnb=document.getElementById('sv-dnb');dnb.style.background=dN>=0?'var(--green-bg)':'var(--danger-bg)';dnb.style.border='1.5px solid '+(dN>=0?'#86efac':'#fca5a5');
+  const snp=document.getElementById('sv-np');snp.textContent='$'+f$(pN);snp.style.color=pN>=0?'var(--green)':'var(--red)';
+  const snd=document.getElementById('sv-nd');snd.textContent=fLL(dN)+' ل.ل';snd.style.color=dN>=0?'var(--green)':'var(--red)';
+  const ce=document.getElementById('sv-cv');ce.textContent='$'+f$(cmb);ce.style.color=cmb>=0?'var(--green)':'var(--red)';
+  const cb=document.getElementById('sv-cb');cb.style.background=cmb>=0?'var(--green-bg)':'var(--danger-bg)';cb.style.border='2px solid '+(cmb>=0?'#86efac':'#fca5a5');
+  document.getElementById('cv-p').textContent='بنزين: $'+f$(pN);
+  document.getElementById('cv-d').textContent='ديزل: $'+f$(dN/RATE);
+}
+
+function copyEnd(f){
+  if(f==='p'){document.getElementById('ps').value=document.getElementById('pe').value;}
+  else{document.getElementById('ds').value=document.getElementById('de').value;}
+  compute();saveDraft();
+}
+function doRefill(f){
+  if(f==='p'){pRef+=parseFloat(document.getElementById('pr-in').value)||0;document.getElementById('pr-in').value='';}
+  else{dRef+=parseFloat(document.getElementById('dr-in').value)||0;document.getElementById('dr-in').value='';}
+  compute();
+}
+function doDeduct(f){
+  if(f==='p'){pRef-=parseFloat(document.getElementById('pd-in').value)||0;document.getElementById('pd-in').value='';}
+  else{dRef-=parseFloat(document.getElementById('dd-in').value)||0;document.getElementById('dd-in').value='';}
+  compute();
+}
+
+// ── ARCHIVE ──────────────────────────────────────────────────────────────────
+function loadArch(){try{return JSON.parse(localStorage.getItem(SK)||'[]');}catch(e){return[];}}
+function saveArch(a){localStorage.setItem(SK,JSON.stringify(a));}
+
+function snap(){
+  const ps=pSold(),ds=dSold(),pp=pPrc(),dp=dPrc();
+  const pR=ps*pp,dR=ds*dp;
+  const pCA=pCr.reduce((s,r)=>s+(r.litres||0),0)*pp;
+  const dCA=dCr.reduce((s,r)=>s+(r.litres||0),0)*dp;
+  // نفس معادلة compute تماماً
+  let pNetIn=0,pNetOut=0,dNetIn=0,dNetOut=0;
+  tankP.forEach(r=>{pNetIn+=(parseFloat(r.qIn)||0);pNetOut+=(parseFloat(r.qOut)||0);});
+  tankD.forEach(r=>{dNetIn+=(parseFloat(r.qIn)||0);dNetOut+=(parseFloat(r.qOut)||0);});
+  const pT=Math.max(0,pOpening+pNetIn-pNetOut-ps);
+  const dT=Math.max(0,dOpening+dNetIn-dNetOut-ds);
+  const pOver=pT>PCAP, dOver=dT>DCAP;
+  return{
+    id:Date.now(),date:document.getElementById('dt').value,
+    ps:g('ps'),pe:g('pe'),pp,ds:g('ds'),de:g('de'),dp,
+    pRef,dRef,pOpening,dOpening,
+    pNetIn,pNetOut,dNetIn,dNetOut,
+    pT,dT,
+    pTP:PCAP>0?Math.min(100,pT/PCAP*100):0,
+    dTP:DCAP>0?Math.min(100,dT/DCAP*100):0,
+    pOver,dOver,
+    pCr:JSON.parse(JSON.stringify(pCr)),dCr:JSON.parse(JSON.stringify(dCr)),
+    tankP:JSON.parse(JSON.stringify(tankP)),tankD:JSON.parse(JSON.stringify(tankD)),
+    ps2:ps,ds2:ds,pR,dR,pCA,dCA,pN:pR-pCA,dN:dR-dCA,
+    cmb:(pR-pCA)+(dR-dCA)/RATE,
+    pCC:pCr.filter(r=>r.name||r.litres).length,
+    dCC:dCr.filter(r=>r.name||r.litres).length,
+  };
+}
+
+function saveDay(){
+  const s=snap(),arch=loadArch();
+  const idx=arch.findIndex(a=>a.date===s.date);
+  if(idx>=0){if(!confirm('يوجد سجل لهذا التاريخ. تريد تبديله؟'))return;arch[idx]=s;}
+  else arch.unshift(s);
+  saveArch(arch);renderArchive();
+  const btn=document.querySelector('.savbtn');
+  btn.textContent='✅ تم الحفظ!';btn.style.background='linear-gradient(135deg,#16a34a,#15803d)';
+  setTimeout(()=>{btn.textContent='💾  حفظ بيانات اليوم في الأرشيف';btn.style.background='linear-gradient(135deg,#2563eb,#1d4ed8)';},2000);
+}
+
+function renderArchive(){
+  const arch=loadArch();
+  const ab=document.getElementById('ar-badge');
+  ab.style.display=arch.length>0?'flex':'none';ab.textContent=arch.length;
+  document.getElementById('arch-rpt').style.display=arch.length>0?'block':'none';
+  const list=document.getElementById('arch-list');
+  if(arch.length===0){list.innerHTML='<div class="arch-empty">📂<br><br>الأرشيف فارغ<br>اضغط زر الحفظ لتخزين بيانات اليوم</div>';return;}
+
+  let html='';
+  arch.forEach((sn,i)=>{
+    const nc=sn.cmb>=0?'var(--green)':'var(--red)';
+    const nb=sn.cmb>=0?'var(--green-bg)':'var(--danger-bg)';
+    const pc=Math.min(100,sn.pTP||0),dc=Math.min(100,sn.dTP||0);
+    const pOver=sn.pOver||(sn.pT||0)>PCAP, dOver=sn.dOver||(sn.dT||0)>DCAP;
+    const ptc=pOver?'#dc2626':pc<15?'#dc2626':pc<30?'#d97706':'#2563eb';
+    const dtc=dOver?'#dc2626':dc<15?'#dc2626':dc<30?'#d97706':'#0a7c4e';
+    const pCrRows=(sn.pCr||[]).filter(r=>r.name||r.litres).map(r=>
+      '<div class="acrrow"><span style="color:var(--text2)">'+r.name+'</span><span style="color:var(--petrol);font-family:JetBrains Mono,monospace;font-size:11px;font-weight:700">'+fL(r.litres||0)+' L | $'+f$((r.litres||0)*sn.pp)+'</span></div>'
+    ).join('');
+    const dCrRows=(sn.dCr||[]).filter(r=>r.name||r.litres).map(r=>
+      '<div class="acrrow"><span style="color:var(--text2)">'+r.name+'</span><span style="color:var(--diesel);font-family:JetBrains Mono,monospace;font-size:11px;font-weight:700">'+fL(r.litres||0)+' L | '+fLL((r.litres||0)*sn.dp)+' ل.ل</span></div>'
+    ).join('');
+    const pTankMov=(sn.tankP||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).map((r,ti)=>
+      '<div style="background:var(--petrol-bg);border:1px solid var(--petrol-bd);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:12px">'+
+        '<span style="font-weight:800;color:var(--petrol)">'+(ti+1)+'. '+(r.driver||'—')+'</span>'+
+        (r.truck?'<span style="color:var(--muted);margin-right:8px"> 🚛 '+r.truck+'</span>':'')+
+        (r.qIn?'<div style="color:var(--green)">↑ دخول: '+fL(parseFloat(r.qIn)||0)+' L</div>':'')+
+        (r.qOut?'<div style="color:var(--danger)">↓ خروج: '+fL(parseFloat(r.qOut)||0)+' L</div>':'')+
+        (r.note?'<div style="color:var(--muted)">📝 '+r.note+'</div>':'')+
+      '</div>'
+    ).join('');
+    const dTankMov=(sn.tankD||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).map((r,ti)=>
+      '<div style="background:var(--diesel-bg);border:1px solid var(--diesel-bd);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:12px">'+
+        '<span style="font-weight:800;color:var(--diesel)">'+(ti+1)+'. '+(r.driver||'—')+'</span>'+
+        (r.truck?'<span style="color:var(--muted);margin-right:8px"> 🚛 '+r.truck+'</span>':'')+
+        (r.qIn?'<div style="color:var(--green)">↑ دخول: '+fL(parseFloat(r.qIn)||0)+' L</div>':'')+
+        (r.qOut?'<div style="color:var(--danger)">↓ خروج: '+fL(parseFloat(r.qOut)||0)+' L</div>':'')+
+        (r.note?'<div style="color:var(--muted)">📝 '+r.note+'</div>':'')+
+      '</div>'
+    ).join('');
+
+    html+=
+    '<div class="aitm" style="padding:0;overflow:hidden">'+
+      '<div class="arch-hdr" data-day="'+i+'" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;gap:10px">'+
+        '<div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">'+
+          '<span style="font-size:16px;font-weight:900;white-space:nowrap">📅 '+sn.date+'</span>'+
+          '<span class="acmb" style="background:'+nb+';color:'+nc+';font-size:13px;padding:3px 10px;border-radius:20px;white-space:nowrap">$'+f$(sn.cmb||0)+'</span>'+
+          ((pOver||dOver)?'<span style="color:#dc2626;font-size:13px">⛔</span>':'')+
+        '</div>'+
+        '<span class="arch-arrow" style="font-size:14px;color:var(--muted);transition:transform .2s;display:inline-block">▶</span>'+
+      '</div>'+
+      '<div class="arch-body" data-day="'+i+'" style="display:none;padding:0 16px 16px">'+
+        '<div style="height:1px;background:var(--border);margin-bottom:12px"></div>'+
+        ((pOver||dOver)?
+          '<div style="background:#fef2f2;border:2px solid #dc2626;border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:12px;font-weight:700;color:#dc2626">'+
+            (pOver?'⛔ بنزين تجاوز الحد الأقصى! '+fL(sn.pT||0)+' / '+fL(PCAP)+' L<br>':'')  +
+            (dOver?'⛔ ديزل تجاوز الحد الأقصى! '+fL(sn.dT||0)+' / '+fL(DCAP)+' L':'')  +
+          '</div>':'')+
+        '<div class="asec">🛢️ الخزانات</div>'+
+        '<div class="agrid">'+
+          '<div class="akv akv-full" style="background:'+(pOver?'#fef2f2':'var(--petrol-bg)')+';border-color:'+(pOver?'#dc2626':'var(--petrol-bd)')+'">'+
+            '<div class="akl">⛽ بنزين 95 '+(pOver?'⚠️ تجاوز الحد':'')+'</div>'+
+            '<div class="akv2" style="color:'+(pOver?'#dc2626':'var(--petrol)')+'">'+fL(sn.pT||0)+' L <span style="font-size:11px;color:var(--muted)">('+pc.toFixed(1)+'%)</span></div>'+
+            '<div class="atbar"><div class="atfill" style="width:'+pc+'%;background:'+ptc+'"></div></div>'+
+            (sn.pOpening?'<div style="font-size:11px;color:var(--muted);margin-top:4px">رصيد البداية: '+fL(sn.pOpening)+' L</div>':'')+
+          '</div>'+
+          '<div class="akv akv-full" style="background:'+(dOver?'#fef2f2':'var(--diesel-bg)')+';border-color:'+(dOver?'#dc2626':'var(--diesel-bd)')+'">'+
+            '<div class="akl">🛢️ ديزل '+(dOver?'⚠️ تجاوز الحد':'')+'</div>'+
+            '<div class="akv2" style="color:'+(dOver?'#dc2626':'var(--diesel)')+'">'+fL(sn.dT||0)+' L <span style="font-size:11px;color:var(--muted)">('+dc.toFixed(1)+'%)</span></div>'+
+            '<div class="atbar"><div class="atfill" style="width:'+dc+'%;background:'+dtc+'"></div></div>'+
+            (sn.dOpening?'<div style="font-size:11px;color:var(--muted);margin-top:4px">رصيد البداية: '+fL(sn.dOpening)+' L</div>':'')+
+          '</div>'+
+        '</div>'+
+        ((pTankMov||dTankMov)?
+          '<div class="asec">🚛 حركات الخزانات</div>'+
+          (pTankMov?'<div style="margin-bottom:6px"><div style="font-size:11px;font-weight:700;color:var(--petrol);margin-bottom:4px">⛽ بنزين 95</div>'+pTankMov+'</div>':'')+
+          (dTankMov?'<div style="margin-bottom:6px"><div style="font-size:11px;font-weight:700;color:var(--diesel);margin-bottom:4px">🛢️ ديزل</div>'+dTankMov+'</div>':'')
+        :'')+
+        '<div class="asec">⛽ المبيعات</div>'+
+        '<div class="agrid">'+
+          '<div class="akv" style="background:var(--petrol-bg);border-color:var(--petrol-bd)"><div class="akl">بنزين مباع</div><div class="akv2" style="color:var(--petrol)">'+fL(sn.ps2||0)+' L</div></div>'+
+          '<div class="akv" style="background:var(--petrol-bg);border-color:var(--petrol-bd)"><div class="akl">إجمالي البنزين</div><div class="akv2" style="color:var(--petrol)">$'+f$(sn.pR||0)+'</div></div>'+
+          '<div class="akv" style="background:var(--diesel-bg);border-color:var(--diesel-bd)"><div class="akl">ديزل مباع</div><div class="akv2" style="color:var(--diesel)">'+fL(sn.ds2||0)+' L</div></div>'+
+          '<div class="akv" style="background:var(--diesel-bg);border-color:var(--diesel-bd)"><div class="akl">إجمالي الديزل</div><div class="akv2" style="color:var(--diesel)">'+fLL(sn.dR||0)+' ل.ل</div></div>'+
+        '</div>'+
+        ((sn.pCC>0||sn.dCC>0)?
+          '<div class="asec">⏳ الآجل</div>'+
+          '<div class="agrid">'+
+            '<div class="akv" style="background:var(--warning-bg)"><div class="akl">آجل بنزين ('+sn.pCC+' عميل)</div><div class="akv2" style="color:var(--warning)">$'+f$(sn.pCA||0)+'</div></div>'+
+            '<div class="akv" style="background:var(--warning-bg)"><div class="akl">آجل ديزل ('+sn.dCC+' عميل)</div><div class="akv2" style="color:var(--warning)">'+fLL(sn.dCA||0)+' ل.ل</div></div>'+
+          '</div>'+
+          (pCrRows?'<div style="margin-bottom:6px">'+pCrRows+'</div>':'')+
+          (dCrRows?'<div style="margin-bottom:6px">'+dCrRows+'</div>':'')
+        :'')+
+        '<div class="asec">💵 الصافي النقدي</div>'+
+        '<div class="agrid">'+
+          '<div class="akv" style="background:'+(sn.pN>=0?'var(--green-bg)':'var(--danger-bg)')+'"><div class="akl">صافي البنزين</div><div class="akv2" style="color:'+(sn.pN>=0?'var(--green)':'var(--red)')+'">$'+f$(sn.pN||0)+'</div></div>'+
+          '<div class="akv" style="background:'+(sn.dN>=0?'var(--green-bg)':'var(--danger-bg)')+'"><div class="akl">صافي الديزل</div><div class="akv2" style="color:'+(sn.dN>=0?'var(--green)':'var(--red)')+';font-size:12px">'+fLL(sn.dN||0)+' ل.ل</div></div>'+
+          '<div class="akv akv-full" style="background:'+nb+';border-color:'+(sn.cmb>=0?'#86efac':'#fca5a5')+'">'+
+            '<div class="akl">الإجمالي الموحَّد ($)</div>'+
+            '<div class="akv2" style="color:'+nc+';font-size:20px">$'+f$(sn.cmb||0)+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="aacts">'+
+          '<button class="aact" style="background:var(--green-bg);color:var(--green);border:1.5px solid #86efac" data-action="next" data-idx="'+i+'">🌅 ابدأ الغد</button>'+
+          '<button class="aact" style="background:var(--accent-bg);color:var(--accent);border:1.5px solid #bfdbfe" data-action="edit" data-idx="'+i+'">✏️ تعديل</button>'+
+          '<button class="aact" style="background:var(--danger-bg);color:var(--danger);border:1.5px solid #fca5a5;flex:0;padding:9px 14px" data-action="del" data-idx="'+i+'">🗑️</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  });
+  list.innerHTML=html;
+
+  // Event delegation for all arch actions AND collapsible headers
+  list.onclick=function(e){
+    // Action buttons (del/edit/next)
+    const btn=e.target.closest('[data-action]');
+    if(btn){
+      const idx=parseInt(btn.dataset.idx);
+      const action=btn.dataset.action;
+      if(action==='del')delDay(idx);
+      else if(action==='edit')openEdit(idx);
+      else if(action==='next')loadNextDay(idx);
+      return;
+    }
+    // Collapsible header
+    const hdr=e.target.closest('.arch-hdr');
+    if(hdr){
+      const day=hdr.dataset.day;
+      const body=list.querySelector('.arch-body[data-day="'+day+'"]');
+      const arrow=hdr.querySelector('.arch-arrow');
+      if(!body)return;
+      const isOpen=body.style.display!=='none';
+      body.style.display=isOpen?'none':'block';
+      if(arrow)arrow.style.transform=isOpen?'':'rotate(90deg)';
+    }
+  };
+}
+
+function toggleArchDay(id,header){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const arrow=header.querySelector('.arch-arrow');
+  const isOpen=el.style.display!=='none';
+  el.style.display=isOpen?'none':'block';
+  if(arrow) arrow.style.transform=isOpen?'':'rotate(90deg)';
+}
+
+function delDay(i){
+  const a=loadArch();a.splice(i,1);saveArch(a);renderArchive();
+}
+
+function loadNextDay(i){
+  const arch=loadArch(),sn=arch[i];
+  const d=new Date(sn.date);d.setDate(d.getDate()+1);
+  const nd=d.toISOString().slice(0,10);
+
+  // التاريخ
+  document.getElementById('dt').value=nd;
+  document.getElementById('hdr-date').textContent=nd;
+
+  // العدادات - نهاية اليوم السابق تصبح بداية اليوم الجديد
+  document.getElementById('ps').value=sn.pe||0;
+  document.getElementById('pe').value='';
+  document.getElementById('ds').value=sn.de||0;
+  document.getElementById('de').value='';
+
+  // الأسعار تبقى كما هي
+  document.getElementById('pp').value=sn.pp||0;
+  document.getElementById('dp').value=sn.dp||0;
+
+  // الخزانات - رصيد البداية = الكمية الباقية من اليوم السابق
+  pOpening=sn.pT||0;
+  dOpening=sn.dT||0;
+  pRef=0;dRef=0;
+  const poEl=document.getElementById('p-opening');
+  const doEl=document.getElementById('d-opening');
+  if(poEl) poEl.value=pOpening||'';
+  if(doEl) doEl.value=dOpening||'';
+
+  // تفريغ خانات الصهاريج
+  tankP=Array.from({length:TANK_ROWS},()=>blankTank());
+  tankD=Array.from({length:TANK_ROWS},()=>blankTank());
+  buildTankTable('p');buildTankTable('d');
+
+  // تفريغ الآجل
+  pCr=blank();dCr=blank();
+  buildRows();
+
+  compute();saveDraft();
+  switchTab('meters');
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  // تلميع التاريخ باللون الأخضر لحظياً
+  const hd=document.getElementById('hdr-date');
+  hd.style.background='#16a34a';hd.style.color='#fff';
+  setTimeout(()=>{hd.style.background='var(--accent-bg)';hd.style.color='var(--accent)';},1500);
+}
+
+// ── edit modal ────────────────────────────────────────────────────────────────
+let editIdx=-1,editTemp=null;
+
+function openEdit(i){
+  editIdx=i;editTemp=JSON.parse(JSON.stringify(loadArch()));
+  const sn=editTemp[i];
+  const pCrActive=(sn.pCr||[]).filter(r=>r.name||r.litres);
+  const dCrActive=(sn.dCr||[]).filter(r=>r.name||r.litres);
+  const pCrHtml=pCrActive.map((r,ri)=>{
+    const oi=(sn.pCr||[]).indexOf(r);
+    return '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center">'+
+      '<input type="text" class="inp" style="padding:5px 8px;font-size:12px" value="'+r.name+'" oninput="eUpdCr(\'p\','+oi+',\'name\',this.value)">'+
+      '<input type="number" class="inp" style="padding:5px 8px;font-size:12px" value="'+(r.litres||'')+'" oninput="eUpdCr(\'p\','+oi+',\'litres\',this.value)">'+
+      '<div style="color:var(--petrol);font-size:11px;font-family:JetBrains Mono,monospace;font-weight:700;white-space:nowrap" id="ecr-p'+oi+'">$'+f$((r.litres||0)*sn.pp)+'</div></div>';
+  }).join('');
+  const dCrHtml=dCrActive.map((r,ri)=>{
+    const oi=(sn.dCr||[]).indexOf(r);
+    return '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center">'+
+      '<input type="text" class="inp" style="padding:5px 8px;font-size:12px" value="'+r.name+'" oninput="eUpdCr(\'d\','+oi+',\'name\',this.value)">'+
+      '<input type="number" class="inp" style="padding:5px 8px;font-size:12px" value="'+(r.litres||'')+'" oninput="eUpdCr(\'d\','+oi+',\'litres\',this.value)">'+
+      '<div style="color:var(--diesel);font-size:11px;font-family:JetBrains Mono,monospace;font-weight:700;white-space:nowrap" id="ecr-d'+oi+'">'+fLL((r.litres||0)*sn.dp)+' ل.ل</div></div>';
+  }).join('');
+
+  document.getElementById('edit-box').innerHTML=
+    '<div class="mhnd"></div>'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">'+
+      '<div><div class="mtit">📅 '+sn.date+'</div><div class="msub">تعديل بيانات هذا اليوم</div></div>'+
+      '<button class="mcls" onclick="closeEdit()">✕ إغلاق</button>'+
+    '</div>'+
+    '<div class="msec" style="color:var(--petrol)">بنزين 95 — العدادات</div>'+
+    '<div class="mg2r"><div><div class="lbl">أول النهار</div><input type="number" class="inp" value="'+sn.ps+'" oninput="eUpd(\'ps\',this.value)"></div>'+
+    '<div><div class="lbl">آخر النهار</div><input type="number" class="inp" value="'+sn.pe+'" oninput="eUpd(\'pe\',this.value)"></div></div>'+
+    '<div style="margin-bottom:10px"><div class="lbl">سعر الليتر ($)</div><input type="number" class="inp" value="'+sn.pp+'" oninput="eUpd(\'pp\',this.value)"></div>'+
+    '<div class="mg2"><div class="mrbox"><div class="mrl">مباع</div><div class="mrv" id="e-ps" style="color:var(--petrol)">'+fL(sn.ps2)+' L</div></div>'+
+    '<div class="mrbox"><div class="mrl">إجمالي</div><div class="mrv" id="e-pr" style="color:var(--petrol)">$'+f$(sn.pR)+'</div></div></div>'+
+    '<div class="msec" style="color:var(--diesel)">ديزل — العدادات</div>'+
+    '<div class="mg2r"><div><div class="lbl">أول النهار</div><input type="number" class="inp" value="'+sn.ds+'" oninput="eUpd(\'ds\',this.value)"></div>'+
+    '<div><div class="lbl">آخر النهار</div><input type="number" class="inp" value="'+sn.de+'" oninput="eUpd(\'de\',this.value)"></div></div>'+
+    '<div style="margin-bottom:10px"><div class="lbl">سعر الليتر (ل.ل)</div><input type="number" class="inp" value="'+sn.dp+'" oninput="eUpd(\'dp\',this.value)"></div>'+
+    '<div class="mg2"><div class="mrbox"><div class="mrl">مباع</div><div class="mrv" id="e-ds" style="color:var(--diesel)">'+fL(sn.ds2)+' L</div></div>'+
+    '<div class="mrbox"><div class="mrl">إجمالي</div><div class="mrv" id="e-dr" style="color:var(--diesel)">'+fLL(sn.dR)+' ل.ل</div></div></div>'+
+    (pCrActive.length?'<div class="msec" style="color:var(--petrol)">آجل البنزين</div>'+pCrHtml:'')+
+    (dCrActive.length?'<div class="msec" style="color:var(--diesel)">آجل الديزل</div>'+dCrHtml:'')+
+    '<div class="msec">النتائج</div>'+
+    '<div class="mg2">'+
+      '<div class="mrbox"><div class="mrl">صافي ($)</div><div class="mrv" id="e-pn" style="color:'+(sn.pN>=0?'var(--green)':'var(--red)')+'">$'+f$(sn.pN)+'</div></div>'+
+      '<div class="mrbox"><div class="mrl">صافي (ل.ل)</div><div class="mrv" id="e-dn" style="color:'+(sn.dN>=0?'var(--green)':'var(--red)')+';font-size:13px">'+fLL(sn.dN)+' ل.ل</div></div>'+
+    '</div>'+
+    '<div class="mrbox" style="text-align:center;margin-bottom:0">'+
+      '<div class="mrl">الإجمالي الموحَّد ($)</div>'+
+      '<div class="mrv" id="e-cmb" style="font-size:22px;color:'+(sn.cmb>=0?'var(--green)':'var(--red)')+'">$'+f$(sn.cmb)+'</div>'+
+    '</div>'+
+    '<button class="msvbtn" onclick="saveEdit()">💾 &nbsp;حفظ التعديلات</button>';
+
+  document.getElementById('edit-mov').classList.add('open');
+}
+
+function eUpd(field,val){
+  const sn=editTemp[editIdx];
+  sn[field]=parseFloat(val)||0;
+  sn.ps2=Math.max(0,sn.pe-sn.ps);sn.ds2=Math.max(0,sn.de-sn.ds);
+  sn.pR=sn.ps2*sn.pp;sn.dR=sn.ds2*sn.dp;
+  sn.pCA=(sn.pCr||[]).reduce((s,r)=>s+(r.litres||0),0)*sn.pp;
+  sn.dCA=(sn.dCr||[]).reduce((s,r)=>s+(r.litres||0),0)*sn.dp;
+  sn.pN=sn.pR-sn.pCA;sn.dN=sn.dR-sn.dCA;sn.cmb=sn.pN+sn.dN/RATE;
+  eRefresh(sn);
+}
+function eUpdCr(f,idx,field,val){
+  const sn=editTemp[editIdx];
+  const arr=f==='p'?sn.pCr:sn.dCr;
+  arr[idx][field]=field==='litres'?(parseFloat(val)||0):val;
+  sn.pCA=(sn.pCr||[]).reduce((s,r)=>s+(r.litres||0),0)*sn.pp;
+  sn.dCA=(sn.dCr||[]).reduce((s,r)=>s+(r.litres||0),0)*sn.dp;
+  sn.pN=sn.pR-sn.pCA;sn.dN=sn.dR-sn.dCA;sn.cmb=sn.pN+sn.dN/RATE;
+  eRefresh(sn);
+}
+function eRefresh(sn){
+  const s=id=>document.getElementById(id);
+  if(s('e-ps'))s('e-ps').textContent=fL(sn.ps2)+' L';
+  if(s('e-pr'))s('e-pr').textContent='$'+f$(sn.pR);
+  if(s('e-ds'))s('e-ds').textContent=fL(sn.ds2)+' L';
+  if(s('e-dr'))s('e-dr').textContent=fLL(sn.dR)+' ل.ل';
+  if(s('e-pn')){s('e-pn').textContent='$'+f$(sn.pN);s('e-pn').style.color=sn.pN>=0?'var(--green)':'var(--red)';}
+  if(s('e-dn')){s('e-dn').textContent=fLL(sn.dN)+' ل.ل';s('e-dn').style.color=sn.dN>=0?'var(--green)':'var(--red)';}
+  if(s('e-cmb')){s('e-cmb').textContent='$'+f$(sn.cmb);s('e-cmb').style.color=sn.cmb>=0?'var(--green)':'var(--red)';}
+}
+function saveEdit(){saveArch(editTemp);editTemp=null;closeEdit();renderArchive();alert('✅ تم حفظ التعديلات');}
+function closeEdit(){editTemp=null;document.getElementById('edit-mov').classList.remove('open');}
+function closeEditOutside(e){if(e.target===document.getElementById('edit-mov'))closeEdit();}
+
+// ── export / import ───────────────────────────────────────────────────────────
+function exportArchive(){
+  const a=loadArch();if(a.length===0){alert('الأرشيف فارغ');return;}
+  const blob=new Blob([JSON.stringify({v:1,exported:new Date().toISOString(),archive:a},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const el=document.createElement('a');el.href=url;
+  el.download='fuel-'+new Date().toISOString().slice(0,10)+'.json';
+  el.click();URL.revokeObjectURL(url);
+}
+function importArchive(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const parsed=JSON.parse(e.target.result);
+      const incoming=parsed.archive||parsed;
+      if(!Array.isArray(incoming))throw 0;
+      const cur=loadArch();
+      if(cur.length>0){
+        if(confirm('عندك '+cur.length+' سجل.\nموافق=دمج  |  إلغاء=استبدال')){
+          const merged=[...incoming];
+          cur.forEach(c=>{if(!merged.find(m=>m.date===c.date))merged.push(c);});
+          merged.sort((a,b)=>b.date.localeCompare(a.date));
+          saveArch(merged);
+        }else saveArch(incoming);
+      }else saveArch(incoming);
+      renderArchive();alert('✅ تم الاستيراد — '+incoming.length+' سجل');
+    }catch(e){alert('❌ فشل الاستيراد');}
+  };
+  reader.readAsText(file);input.value='';
+}
+
+// ── report ────────────────────────────────────────────────────────────────────
+function buildReport(lang='ar',a){
+  if(!a)a=loadArch();
+  if(!a.length)return lang==='ar'?'الأرشيف فارغ':'Archive is empty';
+  const t=(ar,en)=>lang==='ar'?ar:en;
+  const isEn=lang==='en';
+  let L=[t('⛽ محطة الوقود','⛽ Fuel Station'),'📅 '+a[0]?.date||'',''];
+
+  a.forEach(sn=>{
+    if(a.length>1) L.push('📅 '+sn.date,'');
+
+    // المبيعات
+    L.push(t('🟡 بنزين 95','🟡 Petrol 95'));
+    L.push('   '+t('الكمية المباعة : ','Quantity Sold  : ')+fL(sn.ps2||0)+' L');
+    L.push('   '+t('المبلغ         : ','Amount         : ')+'$'+f$(sn.pR||0));
+    L.push('');
+    L.push(t('🟢 ديزل','🟢 Diesel'));
+    L.push('   '+t('الكمية المباعة : ','Quantity Sold  : ')+fL(sn.ds2||0)+' L');
+    L.push('   '+t('المبلغ         : ','Amount         : ')+fLL(sn.dR||0)+t(' ل.ل',' L.L'));
+    L.push('');
+
+    // دالة مساعدة للرقم الإيموجي
+    const numEmoji=n=>{
+      const map=['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣',
+                 '🔟','1️⃣1️⃣','1️⃣2️⃣','1️⃣3️⃣','1️⃣4️⃣','1️⃣5️⃣','1️⃣6️⃣','1️⃣7️⃣','1️⃣8️⃣','1️⃣9️⃣',
+                 '2️⃣0️⃣','2️⃣1️⃣','2️⃣2️⃣','2️⃣3️⃣','2️⃣4️⃣','2️⃣5️⃣','2️⃣6️⃣','2️⃣7️⃣','2️⃣8️⃣','2️⃣9️⃣','3️⃣0️⃣'];
+      return map[n]||n+'.';
+    };
+
+    // الصافي النقدي
+    L.push('━━━━━━━━━━━━━━━━━━━━');
+    L.push(t('💵 الصافي النقدي','💵 Net Cash'));
+    L.push('');
+
+    // بنزين
+    L.push(t('🟡 بنزين 95','🟡 Petrol 95'));
+    L.push('   '+t('الإجمالي  : ','Total     : ')+'$'+f$(sn.pR||0));
+    if(sn.pCA>0){
+      L.push('   '+t('غير مدفوع : ','Unpaid    : ')+'$'+f$(sn.pCA||0));
+      let pi=1;
+      (sn.pCr||[]).filter(r=>r.litres>0).forEach(r=>{
+        const name=r.name?r.name:'';
+        const appTag=r.app!==false?' 📱 App':'';
+        L.push('');
+        L.push(numEmoji(pi)+' '+name+appTag);
+        L.push('   • '+fL(r.litres)+' L = $'+f$(r.litres*sn.pp));
+        pi++;
+      });
+      L.push('');
+    }
+    L.push('   '+t('الصافي    : ','Net       : ')+'$'+f$(sn.pN||0));
+    L.push('');
+
+    // ديزل
+    L.push(t('🟢 ديزل','🟢 Diesel'));
+    L.push('   '+t('الإجمالي  : ','Total     : ')+fLL(sn.dR||0)+t(' ل.ل',' L.L'));
+    if(sn.dCA>0){
+      L.push('   '+t('غير مدفوع : ','Unpaid    : ')+fLL(sn.dCA||0)+t(' ل.ل',' L.L'));
+      let di=1;
+      (sn.dCr||[]).filter(r=>r.litres>0).forEach(r=>{
+        const name=r.name?r.name:'';
+        const appTag=r.app!==false?' 📱 App':'';
+        L.push('');
+        L.push(numEmoji(di)+' '+name+appTag);
+        L.push('   • '+fL(r.litres)+' L = '+fLL(r.litres*sn.dp)+t(' ل.ل',' L.L'));
+        di++;
+      });
+      L.push('');
+    }
+    L.push('   '+t('الصافي    : ','Net       : ')+fLL(sn.dN||0)+t(' ل.ل',' L.L'));
+    L.push('');
+
+    // الإجمالي
+    const cmb=((sn.pN||0)+(sn.dN||0)/RATE);
+    L.push('━━━━━━━━━━━━━━━━━━━━');
+    L.push(t('💰 الإجمالي الموحد بالدولار','💰 Total in USD'));
+    L.push('   '+t('سعر الصرف : ','Exchange  : ')+fLL(RATE)+t(' ل.ل/$',' L.L/$'));
+    L.push('   ▶ $'+f$(cmb));
+    L.push('');
+
+    // حركات الخزانات - قبل الكمية الباقية
+    const pTankRows=(sn.tankP||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck);
+    const dTankRows=(sn.tankD||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck);
+
+    if(pTankRows.length||dTankRows.length){
+      L.push('━━━━━━━━━━━━━━━━━━━━');
+      L.push(t('🚛 حركات خزان البنزين 95','🚛 Petrol Tank 95 — Movements'));
+      L.push('');
+      if(pTankRows.length){
+        pTankRows.forEach((r,i)=>{
+          L.push(numEmoji(i+1)+(r.driver?' '+t('السائق: ','Driver: ')+r.driver:''));
+          if(r.truck) L.push('      🚛 '+t('الصهريج: ','Truck : ')+r.truck);
+          if(r.qIn)   L.push('      ↑ '+t('دخول  : ','In    : ')+fL(parseFloat(r.qIn)||0)+' L');
+          if(r.qOut)  L.push('      ↓ '+t('خروج  : ','Out   : ')+fL(parseFloat(r.qOut)||0)+' L');
+          if(r.note)  L.push('      📝 '+r.note);
+          L.push('');
+        });
+      } else {
+        L.push('   '+t('لا توجد حركات','No movements'));
+        L.push('');
+      }
+
+      L.push(t('🚛 حركات خزان الديزل','🚛 Diesel Tank — Movements'));
+      L.push('');
+      if(dTankRows.length){
+        dTankRows.forEach((r,i)=>{
+          L.push(numEmoji(i+1)+(r.driver?' '+t('السائق: ','Driver: ')+r.driver:''));
+          if(r.truck) L.push('      🚛 '+t('الصهريج: ','Truck : ')+r.truck);
+          if(r.qIn)   L.push('      ↑ '+t('دخول  : ','In    : ')+fL(parseFloat(r.qIn)||0)+' L');
+          if(r.qOut)  L.push('      ↓ '+t('خروج  : ','Out   : ')+fL(parseFloat(r.qOut)||0)+' L');
+          if(r.note)  L.push('      📝 '+r.note);
+          L.push('');
+        });
+      } else {
+        L.push('   '+t('لا توجد حركات','No movements'));
+        L.push('');
+      }
+    }
+
+    // تحذير تجاوز الحد الأقصى
+    if((sn.pT||0)>PCAP) L.push('⛔ '+t('خزان البنزين تجاوز الحد الأقصى! ('+fL(PCAP)+' L)','Petrol tank exceeded max capacity! ('+fL(PCAP)+' L)'));
+    if((sn.dT||0)>DCAP) L.push('⛔ '+t('خزان الديزل تجاوز الحد الأقصى! ('+fL(DCAP)+' L)','Diesel tank exceeded max capacity! ('+fL(DCAP)+' L)'));
+    if((sn.pT||0)>PCAP||(sn.dT||0)>DCAP) L.push('');
+
+    // الكمية الباقية في الخزانات
+    L.push('━━━━━━━━━━━━━━━━━━━━');
+    L.push(t('🛢️ الكمية الباقية في الخزانات','🛢️ Remaining in Tanks'));
+    L.push('');
+    L.push('   ⛽ '+t('خزان البنزين 95','Petrol Tank 95')+' : '+fL(sn.pT||0)+' L');
+    L.push('   🛢️ '+t('خزان الديزل    ','Diesel Tank    ')+' : '+fL(sn.dT||0)+' L');
+    L.push('');
+    L.push('══════════════════════');
+    L.push('');
+  });
+
+  L.push(t('🕐 تم الإنشاء: ','🕐 Generated: ')+new Date().toLocaleString(lang==='ar'?'ar':'en'));
+  return L.join('\n');
+}
+
+function openReport(step,lang){
+  const arch=loadArch();
+  if(!arch.length){alert('الأرشيف فارغ');return;}
+
+  // خطوة 1: اختيار التواريخ
+  if(!step||step==='dates'){
+    let datesHtml='';
+    arch.forEach((sn,i)=>{
+      const nc=sn.cmb>=0?'var(--green)':'var(--red)';
+      datesHtml+='<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;margin-bottom:8px">'+
+        '<input type="checkbox" value="'+i+'" checked style="width:18px;height:18px;cursor:pointer">'+
+        '<span style="font-weight:700;flex:1">📅 '+sn.date+'</span>'+
+        '<span style="font-size:13px;font-weight:900;font-family:JetBrains Mono,monospace;color:'+nc+'">$'+f$(sn.cmb||0)+'</span>'+
+      '</label>';
+    });
+    document.getElementById('rpt-box').innerHTML=
+      '<div class="mhnd"></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+        '<div class="mtit">📤 إرسال التقرير</div>'+
+        '<button class="mcls" onclick="closeRpt()">✕</button>'+
+      '</div>'+
+      '<div style="font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:600;text-align:center">اختر الأيام التي تريد إرسالها</div>'+
+      '<div style="margin-bottom:14px">'+datesHtml+'</div>'+
+      '<div style="display:flex;gap:8px;margin-bottom:14px">'+
+        '<button onclick="toggleAllDates(true)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);font-family:Cairo,sans-serif;font-weight:700;font-size:12px;cursor:pointer">✅ تحديد الكل</button>'+
+        '<button onclick="toggleAllDates(false)" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card2);font-family:Cairo,sans-serif;font-weight:700;font-size:12px;cursor:pointer">⬜ إلغاء الكل</button>'+
+      '</div>'+
+      '<div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px;font-weight:600">اختر لغة التقرير</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+        '<button onclick="openReport(\'lang\',\'ar\')" style="padding:14px;border-radius:14px;border:1.5px solid var(--border);background:var(--card2);font-family:Cairo,sans-serif;font-size:15px;font-weight:900;cursor:pointer">🇸🇦 عربي</button>'+
+        '<button onclick="openReport(\'lang\',\'en\')" style="padding:14px;border-radius:14px;border:1.5px solid var(--border);background:var(--card2);font-family:Cairo,sans-serif;font-size:15px;font-weight:900;cursor:pointer">🇬🇧 English</button>'+
+      '</div>';
+    document.getElementById('rpt-mov').classList.add('open');
+    return;
+  }
+
+  // خطوة 2: بناء وعرض التقرير للتواريخ المختارة
+  if(step==='lang'){
+    const checked=[...document.querySelectorAll('#rpt-box input[type=checkbox]:checked')].map(cb=>parseInt(cb.value));
+    if(!checked.length){alert('اختر يوماً واحداً على الأقل');return;}
+    const selectedArch=checked.map(i=>arch[i]);
+    const txt=buildReport(lang,selectedArch);
+    const title=lang==='ar'?'📤 إرسال التقرير':'📤 Send Report';
+    const waBtn=lang==='ar'?'📱 واتساب':'📱 WhatsApp';
+    const cpBtn=lang==='ar'?'📋 نسخ':'📋 Copy';
+    document.getElementById('rpt-box').innerHTML=
+      '<div class="mhnd"></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+        '<div class="mtit">'+title+'</div>'+
+        '<button class="mcls" onclick="openReport(\'dates\')">↩</button>'+
+      '</div>'+
+      '<textarea class="rarea" id="rpt-txt" readonly style="direction:'+(lang==='en'?'ltr':'rtl')+';text-align:'+(lang==='en'?'left':'right')+'">'+txt+'</textarea>'+
+      '<div class="shrow">'+
+        '<button class="shbtn" style="background:linear-gradient(135deg,#25d366,#128c7e);color:#fff" onclick="shareWA()">'+waBtn+'</button>'+
+        '<button class="shbtn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff" onclick="copyRpt()">'+cpBtn+'</button>'+
+      '</div>';
+    document.getElementById('rpt-mov').classList.add('open');
+  }
+}
+
+function toggleAllDates(check){
+  document.querySelectorAll('#rpt-box input[type=checkbox]').forEach(cb=>cb.checked=check);
+}
+
+function closeRpt(){document.getElementById('rpt-mov').classList.remove('open');}
+function closeRptOutside(e){if(e.target===document.getElementById('rpt-mov'))closeRpt();}
+function copyRpt(){
+  const t=document.getElementById('rpt-txt').value;
+  navigator.clipboard.writeText(t).then(()=>alert('✅ تم النسخ!')).catch(()=>{document.getElementById('rpt-txt').select();document.execCommand('copy');alert('✅ تم النسخ!');});
+}
+function shareWA(){window.open('https://wa.me/?text='+encodeURIComponent(document.getElementById('rpt-txt').value),'_blank');}
+
+// ========== إدارة العملاء ==========
+function clLoad(){
+  try{return JSON.parse(localStorage.getItem(DB_KEY)||'[]');}
+  catch(e){return[];}
+}
+function clSave(arr){ localStorage.setItem(DB_KEY,JSON.stringify(arr)); }
+
+function clToast(msg){
+  let t=document.getElementById('cl-toast-el');
+  if(!t){t=document.createElement('div');t.id='cl-toast-el';t.className='cl-toast';document.body.appendChild(t);}
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._tm);t._tm=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function clAddClient(){
+  const name=(document.getElementById('cl-new-name').value||'').trim();
+  const plate=(document.getElementById('cl-new-plate').value||'').trim();
+  if(!name&&!plate){alert('أدخل الاسم أو رقم السيارة على الأقل');return;}
+  const arr=clLoad();
+  
+  // ✅ فحص التكرار
+  const nameLower=name.toLowerCase();
+  const plateLower=plate.toLowerCase();
+  
+  const isDuplicate=arr.some(c=>{
+    const cNameMatch=name&&c.name&&c.name.toLowerCase()===nameLower;
+    const cPlateMatch=plate&&c.plate&&c.plate.toLowerCase()===plateLower;
+    return cNameMatch||cPlateMatch;
+  });
+  
+  if(isDuplicate){
+    const existingClient=arr.find(c=>{
+      const cNameMatch=name&&c.name&&c.name.toLowerCase()===nameLower;
+      const cPlateMatch=plate&&c.plate&&c.plate.toLowerCase()===plateLower;
+      return cNameMatch||cPlateMatch;
+    });
+    
+    let msg='⚠️ هذا العميل موجود بالفعل\n\n';
+    if(existingClient.name)msg+='الاسم: '+existingClient.name+'\n';
+    if(existingClient.plate)msg+='السيارة: '+existingClient.plate;
+    alert(msg);
+    return;
+  }
+  
+  arr.push({name,plate,id:Date.now()});
+  clSave(arr);
+  document.getElementById('cl-new-name').value='';
+  document.getElementById('cl-new-plate').value='';
+  clRender();
+  clUpdateBadge();
+  clToast('✅ تم إضافة العميل');
+  document.getElementById('cl-new-name').focus();
+}
+
+function clDelete(idx){
+  if(!confirm('هل تريد حذف هذا العميل؟'))return;
+  const arr=clLoad();arr.splice(idx,1);clSave(arr);
+  clRender();clUpdateBadge();clToast('🗑️ تم الحذف');
+}
+
+function clOpenEdit(idx){
+  _clEditIdx=idx;
+  const arr=clLoad();
+  document.getElementById('cl-edit-name').value=arr[idx].name||'';
+  document.getElementById('cl-edit-plate').value=arr[idx].plate||'';
+  document.getElementById('cl-edit-mov').classList.add('open');
+}
+function clCloseEdit(){document.getElementById('cl-edit-mov').classList.remove('open');_clEditIdx=-1;}
+function clSaveEdit(){
+  if(_clEditIdx<0)return;
+  const name=(document.getElementById('cl-edit-name').value||'').trim();
+  const plate=(document.getElementById('cl-edit-plate').value||'').trim();
+  if(!name&&!plate){alert('أدخل الاسم أو رقم السيارة');return;}
+  const arr=clLoad();
+  arr[_clEditIdx].name=name;arr[_clEditIdx].plate=plate;
+  clSave(arr);clCloseEdit();clRender();clToast('✅ تم التعديل');
+}
+
+function clUpdateBadge(){
+  const n=clLoad().length;
+  const b=document.getElementById('cl-badge');
+  if(b){b.style.display=n>0?'flex':'none';b.textContent=n;}
+}
+
+function clRender(){
+  const q=(document.getElementById('cl-search')?document.getElementById('cl-search').value||'':'').trim().toLowerCase();
+  const arr=clLoad();
+  const filtered=q?arr.filter(c=>(c.name||'').toLowerCase().includes(q)||(c.plate||'').toLowerCase().includes(q)):arr;
+  const stat=document.getElementById('cl-stat');
+  if(stat){
+    stat.style.display=arr.length>0?'grid':'none';
+    document.getElementById('cl-stat-total').textContent=arr.length;
+    document.getElementById('cl-stat-filtered').textContent=filtered.length;
+  }
+  clUpdateBadge();
+  const c=document.getElementById('cl-list');
+  if(!c)return;
+  if(!arr.length){
+    c.innerHTML='<div class="cl-empty">👥<br>لا يوجد عملاء بعد<br><small style="font-size:12px">أضف أول عميل من الأعلى</small></div>';
+    return;
+  }
+  if(!filtered.length){
+    c.innerHTML='<div class="cl-empty">🔍<br>لا توجد نتائج</div>';
+    return;
+  }
+  c.innerHTML='';
+  filtered.forEach(cl=>{
+    const realIdx=arr.indexOf(cl);
+    const div=document.createElement('div');
+    div.className='cl-item';
+    div.innerHTML=
+      '<div class="cl-num">'+(realIdx+1)+'</div>'+
+      '<div class="cl-info">'+
+        '<div class="cl-name">'+(cl.name||'<span style="color:var(--muted);font-style:italic">بدون اسم</span>')+'</div>'+
+        '<div class="cl-plate">'+(cl.plate?'🚗 '+cl.plate:'—')+'</div>'+
+      '</div>'+
+      '<div class="cl-actions">'+
+        '<button class="cl-ebtn" onclick="clOpenEdit('+realIdx+')">✏️</button>'+
+        '<button class="cl-dbtn" onclick="clDelete('+realIdx+')">🗑️</button>'+
+      '</div>';
+    c.appendChild(div);
+  });
+}
+// ===================================
+
+// ========== الاقتراحات التلقائية ==========
+let _acFocus={pre:null,idx:-1,itemIdx:-1};
+
+function loadClients(){return clLoad();}
+
+function showAC(pre,i){
+  const inp=document.getElementById(pre+'-name'+i);
+  const list=document.getElementById('ac-'+pre+'-'+i);
+  if(!inp||!list) return;
+  const q=(inp.value||'').trim().toLowerCase();
+  _acFocus={pre,idx:i,itemIdx:-1};
+  if(!q){list.classList.remove('open');list.innerHTML='';return;}
+  const clients=loadClients();
+  const matches=clients.filter(c=>
+    (c.name||'').toLowerCase().includes(q)||(c.plate||'').toLowerCase().includes(q)
+  ).slice(0,8);
+  if(!matches.length){
+    list.innerHTML='<div class="ac-empty">لا توجد نتائج في قاعدة البيانات</div>';
+  } else {
+    list.innerHTML=matches.map((c,mi)=>
+      '<div class="ac-item" data-mi="'+mi+'">'+
+        (c.name ? '<div class="ac-pick-name" onclick="pickAC(\''+pre+'\',' +i+ ',\''+escQ(c.name)+'\')">' +
+          '<div class="ac-name">'+c.name+'</div>' +
+          '<div class="ac-pick-hint">👤 اضغط للاسم</div></div>' : '') +
+        (c.plate ? '<div class="ac-pick-plate" onclick="pickAC(\''+pre+'\',' +i+ ',\''+escQ(c.plate)+'\')">' +
+          '<div class="ac-plate">🚗 '+c.plate+'</div>' +
+          '<div class="ac-pick-hint">🔢 اضغط للرقم</div></div>' : '') +
+      '</div>'
+    ).join('');
+  }
+  const rect=inp.getBoundingClientRect();
+  const listW=Math.max(rect.width,220);
+  list.style.width=listW+'px';
+  const spaceBelow=window.innerHeight-rect.bottom;
+  const listH=Math.min(260,matches.length?matches.length*70:50);
+  if(spaceBelow<listH+10&&rect.top>listH){
+    list.style.top=(rect.top-listH-4)+'px';
+  } else {
+    list.style.top=(rect.bottom+4)+'px';
+  }
+  const rightPos=window.innerWidth-rect.right;
+  list.style.right=rightPos+'px';
+  list.style.left='auto';
+  if(list.parentElement!==document.body) document.body.appendChild(list);
+  list.classList.add('open');
+}
+
+function escQ(s){return(s||'').replace(/'/g, String.fromCharCode(92)+"'");}
+
+function pickAC(pre,i,val){
+  const fuel=pre==='pc'?'p':'d';
+  const inp=document.getElementById(pre+'-name'+i);
+  if(inp){inp.value=val;}
+  updName(fuel,i,val);
+  closeAC(pre,i);
+}
+
+
+function closeAC(pre,i){
+  const list=document.getElementById('ac-'+pre+'-'+i);
+  if(list){list.classList.remove('open');list.innerHTML='';}
+}
+function closeAllAC(){
+  document.querySelectorAll('.ac-list.open').forEach(l=>{l.classList.remove('open');l.innerHTML='';});
+}
+
+function navAC(e,pre,i,fuel){
+  const list=document.getElementById('ac-'+pre+'-'+i);
+  if(!list||!list.classList.contains('open')) return;
+  const items=list.querySelectorAll('.ac-item');
+  if(!items.length) return;
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    _acFocus.itemIdx=Math.min(_acFocus.itemIdx+1,items.length-1);
+    items.forEach((it,k)=>it.classList.toggle('focused',k===_acFocus.itemIdx));
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    _acFocus.itemIdx=Math.max(_acFocus.itemIdx-1,0);
+    items.forEach((it,k)=>it.classList.toggle('focused',k===_acFocus.itemIdx));
+  } else if(e.key==='Enter'){
+    if(_acFocus.itemIdx>=0&&items[_acFocus.itemIdx]){
+      e.preventDefault();
+      items[_acFocus.itemIdx].click();
+    }
+  } else if(e.key==='Escape'){
+    closeAC(pre,i);
+  }
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.ac-list')&&!e.target.closest('.ac-wrap')){
+    closeAllAC();
+  }
+});
+document.getElementById('content').addEventListener('scroll',function(){
+  closeAllAC();
+});
+// ===================================================================
+
+// ========== DARK MODE ==========
+function toggleDark(){
+  const isDark=document.body.classList.toggle('dark');
+  document.getElementById('dark-btn').textContent=isDark?'☀️':'🌙';
+  localStorage.setItem('fuel_dark',isDark?'1':'0');
+}
+function initDark(){
+  if(localStorage.getItem('fuel_dark')==='1'){
+    document.body.classList.add('dark');
+    const btn=document.getElementById('dark-btn');
+    if(btn) btn.textContent='☀️';
+  }
+}
+// ================================
+
+// ========== PDF DATE PICKER ==========
+let _pdfLang='ar';
+function setPdfLang(lang){
+  _pdfLang=lang;
+  const arBtn=document.getElementById('lang-ar-btn');
+  const enBtn=document.getElementById('lang-en-btn');
+  if(arBtn&&enBtn){
+    arBtn.style.background=lang==='ar'?'var(--accent)':'var(--card2)';
+    arBtn.style.color=lang==='ar'?'#fff':'var(--muted)';
+    arBtn.style.border=lang==='ar'?'2px solid var(--accent)':'1.5px solid var(--border)';
+    enBtn.style.background=lang==='en'?'var(--accent)':'var(--card2)';
+    enBtn.style.color=lang==='en'?'#fff':'var(--muted)';
+    enBtn.style.border=lang==='en'?'2px solid var(--accent)':'1.5px solid var(--border)';
+  }
+}
+function openPdfPicker(){
+  const arch=loadArch();
+  if(!arch.length){alert('الأرشيف فارغ');return;}
+  // تحديث أزرار اللغة عند فتح النافذة
+  setPdfLang(_pdfLang);
+  const list=document.getElementById('pdf-date-list');
+  list.innerHTML='';
+  arch.forEach((sn,i)=>{
+    const row=document.createElement('label');
+    row.style.cssText='display:flex;align-items:center;gap:12px;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;cursor:pointer;transition:border-color .15s';
+    row.innerHTML=`
+      <input type="checkbox" checked data-idx="${i}" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
+      <span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;flex:1">${sn.date}</span>
+      <span style="font-size:12px;color:var(--muted);font-weight:600">بنزين: $${f$(sn.pR||0)} &nbsp;|&nbsp; ديزل: ${fLL(sn.dR||0)} ل.ل</span>`;
+    list.appendChild(row);
+  });
+  document.getElementById('pdf-picker-mov').classList.add('open');
+}
+function closePdfPicker(){
+  document.getElementById('pdf-picker-mov').classList.remove('open');
+}
+function pdfPickAll(val){
+  document.querySelectorAll('#pdf-date-list input[type=checkbox]').forEach(cb=>cb.checked=val);
+}
+function exportPDFSelected(){
+  const arch=loadArch();
+  const selected=[];
+  document.querySelectorAll('#pdf-date-list input[type=checkbox]').forEach(cb=>{
+    if(cb.checked) selected.push(arch[parseInt(cb.dataset.idx)]);
+  });
+  if(!selected.length){alert('لم تختر أي يوم');return;}
+  closePdfPicker();
+  exportPDF(selected,_pdfLang);
+}
+// ================================
+
+// ========== PDF EXPORT (HTML Print) ==========
+function exportPDF(arch, lang){
+  if(!arch) arch=loadArch();
+  if(!lang) lang=_pdfLang||'ar';
+  if(!arch.length){alert(lang==='en'?'Archive is empty':'الأرشيف فارغ');return;}
+
+  const isEn=lang==='en';
+  const dir=isEn?'ltr':'rtl';
+  const T={
+    title:       isEn?'⛽ Fuel Station Report':'⛽ تقرير محطة الوقود',
+    subtitle:    isEn?`Fuel Station Report — ${arch.length} day(s)`:`Fuel Station Report — ${arch.length} يوم`,
+    printed:     isEn?'Printed:':'طُبع:',
+    readyPrint:  isEn?'Ready to Print':'جاهز للطباعة',
+    printHint:   isEn?'Press Ctrl+P then choose "Save as PDF"':'اضغط زر الطباعة أو Ctrl+P، ثم اختر "Save as PDF"',
+    printBtn:    isEn?'Print / PDF ⬇':'طباعة / PDF ⬇',
+    net:         isEn?'Net':'صافي',
+    sold:        isEn?'Sold':'مباع',
+    total:       isEn?'Total':'الإجمالي',
+    credit:      isEn?'Credit':'آجل',
+    netCol:      isEn?'Net':'صافي',
+    petrol:      isEn?'⛽ Petrol 95':'⛽ بنزين 95',
+    diesel:      isEn?'🛢️ Diesel':'🛢️ ديزل',
+    creditSec:   isEn?'⏳ Credit Sales':'⏳ المبيعات الآجلة',
+    tankSec:     isEn?'🛢️ Tank Levels':'🛢️ مستوى الخزانات',
+    footer:      isEn?'Fuel Station App':'محطة الوقود • Fuel Station App',
+    ll:          isEn?'LL':'ل.ل',
+  };
+
+  let days='';
+  arch.forEach((sn,si)=>{
+    const pCrActive=(sn.pCr||[]).filter(r=>r.litres>0);
+    const dCrActive=(sn.dCr||[]).filter(r=>r.litres>0);
+    const hasCr=pCrActive.length||dCrActive.length;
+
+    let crHtml='';
+    if(hasCr){
+      crHtml=`<div class="sec-title">${T.creditSec}</div>`;
+      if(pCrActive.length){
+        crHtml+=`<div class="cr-fuel-label" style="color:#d4880a">${T.petrol}</div><div class="cr-cards">`;
+        pCrActive.forEach((r,idx)=>{
+          crHtml+=`<div class="cr-card">
+            <div class="cr-card-num">${idx+1}</div>
+            <div class="cr-card-info">
+              <div class="cr-card-name">${r.name||'—'}</div>
+              ${r.app!==false?'<span style="font-size:10px;font-weight:900;background:#fff8e6;color:#d4880a;border:1.5px solid #f5d78a;border-radius:6px;padding:1px 6px;display:inline-block;margin-bottom:6px">📱 App</span>':''}
+              <div class="cr-card-row">
+                <span class="cr-card-l">${fL(r.litres)} L</span>
+                <span class="cr-card-eq">=</span>
+                <span class="cr-card-amt" style="color:#d4880a">$${f$(r.litres*sn.pp)}</span>
+              </div>
+            </div>
+          </div>`;
+        });
+        crHtml+='</div>';
+      }
+      if(dCrActive.length){
+        crHtml+=`<div class="cr-fuel-label" style="color:#0a7c4e;margin-top:10px">${T.diesel}</div><div class="cr-cards">`;
+        dCrActive.forEach((r,idx)=>{
+          crHtml+=`<div class="cr-card" style="border-color:#7dd9b0;box-shadow:0 2px 6px rgba(10,124,78,.1)">
+            <div class="cr-card-num-d">${idx+1}</div>
+            <div class="cr-card-info">
+              <div class="cr-card-name">${r.name||'—'}</div>
+              ${r.app!==false?'<span style="font-size:10px;font-weight:900;background:#e8faf2;color:#0a7c4e;border:1.5px solid #7dd9b0;border-radius:6px;padding:1px 6px;display:inline-block;margin-bottom:6px">📱 App</span>':''}
+              <div class="cr-card-row">
+                <span class="cr-card-l">${fL(r.litres)} L</span>
+                <span class="cr-card-eq">=</span>
+                <span class="cr-card-amt" style="color:#0a7c4e">${fLL(r.litres*sn.dp)} ${T.ll}</span>
+              </div>
+            </div>
+          </div>`;
+        });
+        crHtml+='</div>';
+      }
+    }
+
+    const pPct=Math.min(100,sn.pTP||0);
+    const dPct=Math.min(100,sn.dTP||0);
+    const cmbPos=sn.cmb>=0;
+
+    days+=`
+    <div class="day-card ${si>0?'page-break':''}">
+      <div class="day-header">
+        <span class="day-date">📅 ${sn.date}</span>
+        <span class="day-net ${cmbPos?'pos':'neg'}">${cmbPos?'▲':'▼'} ${T.net}: $${f$(sn.cmb||0)}</span>
+      </div>
+
+      <div class="fuel-grid">
+        <div class="fuel-box petrol-box">
+          <div class="fuel-title" style="color:#d4880a">${T.petrol}</div>
+          <div class="fuel-row"><span class="fl">${T.sold}</span><span class="fv">${fL(sn.ps2||0)} L</span></div>
+          <div class="fuel-row"><span class="fl">${T.total}</span><span class="fv" style="color:#d4880a">$${f$(sn.pR||0)}</span></div>
+          <div class="fuel-row"><span class="fl">${T.credit}</span><span class="fv" style="color:#b45309">$${f$(sn.pCA||0)}</span></div>
+          <div class="fuel-net" style="background:#fff8e6;border-color:#f5d78a;color:#d4880a">${T.netCol}: $${f$(sn.pN||0)}</div>
+        </div>
+        <div class="fuel-box diesel-box">
+          <div class="fuel-title" style="color:#0a7c4e">${T.diesel}</div>
+          <div class="fuel-row"><span class="fl">${T.sold}</span><span class="fv">${fL(sn.ds2||0)} L</span></div>
+          <div class="fuel-row"><span class="fl">${T.total}</span><span class="fv" style="color:#0a7c4e">${fLL(sn.dR||0)} ${T.ll}</span></div>
+          <div class="fuel-row"><span class="fl">${T.credit}</span><span class="fv" style="color:#b45309">${fLL(sn.dCA||0)} ${T.ll}</span></div>
+          <div class="fuel-net" style="background:#e8faf2;border-color:#7dd9b0;color:#0a7c4e">${T.netCol}: ${fLL(sn.dN||0)} ${T.ll}</div>
+        </div>
+      </div>
+
+      ${hasCr?'<div class="cr-section">'+crHtml+'</div>':''}
+
+      <!-- Tank Movements - DETAILED with Numbers -->
+      ${(sn.tankP||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).length>0 || (sn.tankD||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).length>0?`
+      <div class="sec-title" style="margin-top:20px">🚛 ${isEn?'Tank Movements - Detailed':'حركات الخزانات - تفاصيل'}</div>
+      
+      <!-- PETROL MOVEMENTS -->
+      ${(sn.tankP||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).length>0?`
+      <div style="margin-bottom:16px">
+        <div style="font-weight:900;color:#d4880a;font-size:13px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #f5d78a">⛽ ${isEn?'PETROL 95':'بنزين 95'}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+          ${(sn.tankP||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).map((r,ti)=>{
+            const qIn=parseFloat(r.qIn)||0;
+            const qOut=parseFloat(r.qOut)||0;
+            const balance=qIn-qOut;
+            return `<div style="background:#fff8e6;border:2px solid #f5d78a;border-radius:14px;padding:14px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(212,136,10,0.1)"><div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#d4880a,#f5d78a)"></div><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px"><div style="flex:1;min-width:0"><div style="font-weight:900;color:#d4880a;font-size:14px;margin-bottom:3px;word-break:break-word">${r.driver||'—'}</div><div style="font-size:11px;color:#7e90a8;font-family:'JetBrains Mono',monospace;font-weight:600">${r.truck?'🚛 '+r.truck:'—'}</div></div><div style="background:#d4880a;color:#fff;padding:6px 10px;border-radius:8px;font-weight:900;font-size:12px;flex-shrink:0;text-align:center">${ti+1}<br><span style="font-size:9px">حركة</span></div></div><div style="border-top:1.5px solid #f5d78a;padding-top:10px;display:grid;gap:8px">${qIn>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"><span style="color:#16a34a;font-weight:800;font-size:12px">↑ INBOUND</span><span style="color:#16a34a;font-weight:900;font-size:13px;font-family:'JetBrains Mono',monospace;background:#f0fdf4;padding:2px 8px;border-radius:4px">${fL(qIn)} L</span></div>`:''} ${qOut>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"><span style="color:#dc2626;font-weight:800;font-size:12px">↓ OUTBOUND</span><span style="color:#dc2626;font-weight:900;font-size:13px;font-family:'JetBrains Mono',monospace;background:#fef2f2;padding:2px 8px;border-radius:4px">${fL(qOut)} L</span></div>`:''} ${balance!==0?`<div style="display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid #f5d78a;padding-top:8px;padding-bottom:4px"><span style="color:#7e90a8;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:0.05em">Balance</span><span style="color:${balance>0?'#d4880a':'#dc2626'};font-weight:900;font-size:14px;font-family:'JetBrains Mono',monospace">${balance>0?'+ ':''}${fL(Math.abs(balance))} L</span></div>`:''} ${r.note?`<div style="margin-top:8px;padding:8px;background:white;border-left:3px solid #d4880a;border-radius:4px;font-size:11px;color:#7e90a8">📝 ${r.note}</div>`:''}</div></div>`;
+          }).join('')}
+        </div>
+      </div>
+      `:''}
+      
+      <!-- DIESEL MOVEMENTS -->
+      ${(sn.tankD||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).length>0?`
+      <div style="margin-bottom:16px">
+        <div style="font-weight:900;color:#0a7c4e;font-size:13px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #7dd9b0">🛢️ ${isEn?'DIESEL':'ديزل'}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+          ${(sn.tankD||[]).filter(r=>r.qIn||r.qOut||r.driver||r.truck).map((r,ti)=>{
+            const qIn=parseFloat(r.qIn)||0;
+            const qOut=parseFloat(r.qOut)||0;
+            const balance=qIn-qOut;
+            return `<div style="background:#e8faf2;border:2px solid #7dd9b0;border-radius:14px;padding:14px;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(10,124,78,0.1)"><div style="position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#0a7c4e,#7dd9b0)"></div><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px"><div style="flex:1;min-width:0"><div style="font-weight:900;color:#0a7c4e;font-size:14px;margin-bottom:3px;word-break:break-word">${r.driver||'—'}</div><div style="font-size:11px;color:#7e90a8;font-family:'JetBrains Mono',monospace;font-weight:600">${r.truck?'🚛 '+r.truck:'—'}</div></div><div style="background:#0a7c4e;color:#fff;padding:6px 10px;border-radius:8px;font-weight:900;font-size:12px;flex-shrink:0;text-align:center">${ti+1}<br><span style="font-size:9px">حركة</span></div></div><div style="border-top:1.5px solid #7dd9b0;padding-top:10px;display:grid;gap:8px">${qIn>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"><span style="color:#16a34a;font-weight:800;font-size:12px">↑ INBOUND</span><span style="color:#16a34a;font-weight:900;font-size:13px;font-family:'JetBrains Mono',monospace;background:#f0fdf4;padding:2px 8px;border-radius:4px">${fL(qIn)} L</span></div>`:''} ${qOut>0?`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"><span style="color:#dc2626;font-weight:800;font-size:12px">↓ OUTBOUND</span><span style="color:#dc2626;font-weight:900;font-size:13px;font-family:'JetBrains Mono',monospace;background:#fef2f2;padding:2px 8px;border-radius:4px">${fL(qOut)} L</span></div>`:''} ${balance!==0?`<div style="display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid #7dd9b0;padding-top:8px;padding-bottom:4px"><span style="color:#7e90a8;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:0.05em">Balance</span><span style="color:${balance>0?'#0a7c4e':'#dc2626'};font-weight:900;font-size:14px;font-family:'JetBrains Mono',monospace">${balance>0?'+ ':''}${fL(Math.abs(balance))} L</span></div>`:''} ${r.note?`<div style="margin-top:8px;padding:8px;background:white;border-left:3px solid #0a7c4e;border-radius:4px;font-size:11px;color:#7e90a8">📝 ${r.note}</div>`:''}</div></div>`;
+          }).join('')}
+        </div>
+      </div>
+      `:''}
+      `:''}
+
+      <!-- TANK LEVELS - FINAL at the END -->
+      <div class="sec-title" style="margin-top:24px;margin-bottom:14px">⛽ ${T.tankSec} - الكمية المتبقية</div>
+      <div class="tanks-grid">
+        <div class="tank-item">
+          <div class="tank-label" style="color:#d4880a">${isEn?'Petrol 95':'بنزين 95'}</div>
+          <div class="tank-bar-wrap"><div class="tank-bar-fill" style="width:${pPct}%;background:#d4880a"></div></div>
+          <div class="tank-nums"><span>${fL(sn.pT||0)} L</span><span style="font-weight:700">${pPct.toFixed(1)}%</span></div>
+        </div>
+        <div class="tank-item">
+          <div class="tank-label" style="color:#0a7c4e">${isEn?'Diesel':'ديزل'}</div>
+          <div class="tank-bar-wrap"><div class="tank-bar-fill" style="width:${dPct}%;background:#0a7c4e"></div></div>
+          <div class="tank-nums"><span>${fL(sn.dT||0)} L</span><span style="font-weight:700">${dPct.toFixed(1)}%</span></div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  const dateStr=new Date().toLocaleDateString(isEn?'en-GB':'ar-LB');
+  const pageCounter=isEn?`content:"Page " counter(page) " of " counter(pages)`:`content:"صفحة " counter(page) " من " counter(pages)`;
+  const fontFace=isEn?`font-family:'JetBrains Mono',monospace`:`font-family:'Cairo',sans-serif`;
+
+  const html=`<!DOCTYPE html>
+<html lang="${isEn?'en':'ar'}" dir="${dir}">
+<head>
+<meta charset="UTF-8">
+<title>${T.title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:${isEn?"'JetBrains Mono',monospace":"'Cairo',sans-serif"};background:#f0f4f8;color:#1a2236;direction:${dir}}
+.print-wrap{max-width:780px;margin:0 auto;padding:20px}
+.report-header{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border-radius:16px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.rh-title{font-size:22px;font-weight:900}
+.rh-sub{font-size:12px;opacity:.8;margin-top:3px}
+.rh-date{font-family:'JetBrains Mono',monospace;font-size:13px;background:rgba(255,255,255,.15);padding:6px 14px;border-radius:20px}
+.day-card{background:#fff;border-radius:14px;border:1.5px solid #dde3ec;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(30,50,90,.07)}
+.day-header{display:flex;align-items:center;justify-content:space-between;background:#2563eb;color:#fff;border-radius:10px;padding:10px 14px;margin-bottom:14px}
+.day-date{font-size:15px;font-weight:900;font-family:'JetBrains Mono',monospace}
+.day-net{font-size:14px;font-weight:900;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,.15);padding:3px 12px;border-radius:20px}
+.day-net.neg{background:rgba(220,38,38,.25)}
+.fuel-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fuel-box{border-radius:10px;border:1.5px solid #dde3ec;padding:12px}
+.petrol-box{background:#fff8e6;border-color:#f5d78a}
+.diesel-box{background:#e8faf2;border-color:#7dd9b0}
+.fuel-title{font-size:13px;font-weight:900;margin-bottom:8px}
+.fuel-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.fl{color:#7e90a8;font-weight:600}
+.fv{font-family:'JetBrains Mono',monospace;font-weight:700}
+.fuel-net{border:1.5px solid;border-radius:8px;padding:6px 10px;text-align:center;font-size:13px;font-weight:900;font-family:'JetBrains Mono',monospace;margin-top:8px}
+.cr-section{background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px;margin-bottom:12px}
+.cr-fuel-label{font-size:11px;font-weight:700;margin-bottom:8px}
+.cr-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cr-card{background:#fff;border-radius:10px;border:2px solid #f5d78a;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(212,136,10,.1)}
+.cr-card-num{width:26px;height:26px;border-radius:7px;background:#fff8e6;border:1.5px solid #f5d78a;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#d4880a;flex-shrink:0}
+.cr-card-num-d{width:26px;height:26px;border-radius:7px;background:#e8faf2;border:1.5px solid #7dd9b0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#0a7c4e;flex-shrink:0}
+.cr-card-info{flex:1;min-width:0}
+.cr-card-name{font-size:13px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.cr-card-row{display:flex;align-items:center;gap:6px}
+.cr-card-l{font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#555;white-space:nowrap}
+.cr-card-eq{font-size:12px;color:#aaa;font-weight:700;flex-shrink:0}
+.cr-card-amt{font-size:12px;font-weight:900;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+.sec-title{font-size:11px;font-weight:700;color:#7e90a8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1.5px solid #dde3ec}
+.tanks-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tank-item{background:#f7f9fc;border-radius:8px;padding:10px;border:1px solid #dde3ec}
+.tank-label{font-size:11px;font-weight:700;margin-bottom:5px}
+.tank-bar-wrap{height:8px;background:#dde3ec;border-radius:4px;overflow:hidden;direction:ltr;margin-bottom:4px}
+.tank-bar-fill{height:100%;border-radius:4px}
+.tank-nums{display:flex;justify-content:space-between;font-size:11px;color:#7e90a8;font-family:'JetBrains Mono',monospace}
+.report-footer{text-align:center;color:#7e90a8;font-size:11px;margin-top:20px;padding-top:12px;border-top:1.5px solid #dde3ec}
+@media print{
+  body{background:#fff}
+  .print-wrap{padding:0;max-width:100%}
+  .no-print{display:none!important}
+  .page-break{page-break-before:always}
+  .day-card{box-shadow:none;border:1px solid #ccc;margin-bottom:12px}
+  .report-header{border-radius:0;margin-bottom:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .day-header{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .petrol-box,.diesel-box,.cr-section,.tank-item{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cr-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{margin:15mm 12mm;@bottom-center{${pageCounter};${fontFace};font-size:10pt;color:#7e90a8;}}
+}
+</style>
+</head>
+<body>
+<div class="print-wrap">
+  <div class="report-header">
+    <div>
+      <div class="rh-title">${T.title}</div>
+      <div class="rh-sub">${T.subtitle}</div>
+    </div>
+    <div class="rh-date">${T.printed} ${dateStr}</div>
+  </div>
+
+  <div class="no-print" style="background:#eff4ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:20px">🖨️</span>
+    <div style="flex:1">
+      <div style="font-size:14px;font-weight:900;color:#1d4ed8">${T.readyPrint}</div>
+      <div style="font-size:12px;color:#3d4f6b;margin-top:2px">${T.printHint}</div>
+    </div>
+    <button onclick="window.print()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:900;font-family:'Cairo',sans-serif;cursor:pointer">${T.printBtn}</button>
+  </div>
+
+  ${days}
+
+  <div class="report-footer">⛽ ${T.footer} &nbsp;•&nbsp; ${dateStr} &nbsp;•&nbsp; <span style="color:#2563eb;font-weight:900">© Nour Merhi</span></div>
+</div>
+</body>
+</html>`;
+
+  const w=window.open('','_blank','width=850,height=700');
+  w.document.write(html);
+  w.document.close();
+}
+// ================================
+
+init();
+clRender();
+clUpdateBadge();
+</script>
+</body>
+</html>
